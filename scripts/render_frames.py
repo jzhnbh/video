@@ -67,6 +67,34 @@ async def render_page(page, idxs, args, outdir, fps):
             print(f"  已渲染 {n_done}/{len(idxs)} 帧  ({el:.0f}s, {n_done/max(el,.01):.1f} 帧/s)", flush=True)
     return n_done
 
+async def launch_browser(p):
+    """启动浏览器：优先 Playwright 自带 Chromium，缺失时回退到系统 Chrome/Edge。
+
+    这样即使没下载 ~200MB 的 Chromium（或下载失败），也能用本机已装的浏览器出片。
+    可用环境变量 PW_CHANNEL=chrome|msedge 强制指定。
+    """
+    launch_args = ["--force-color-profile=srgb", "--disable-lcd-text"]
+    forced = os.environ.get("PW_CHANNEL")
+    if forced:
+        return await p.chromium.launch(channel=forced, args=launch_args)
+    try:
+        return await p.chromium.launch(args=launch_args)
+    except Exception as e:
+        msg = str(e)
+        if "playwright install" not in msg and "Executable doesn't exist" not in msg:
+            raise
+        print("[提示] 未找到 Playwright Chromium，回退到系统浏览器…", file=sys.stderr)
+    last_err = None
+    for ch in ("chrome", "msedge"):
+        try:
+            browser = await p.chromium.launch(channel=ch, args=launch_args)
+            print(f"[提示] 已使用系统浏览器 channel={ch}", file=sys.stderr)
+            return browser
+        except Exception as e2:
+            last_err = e2
+    raise last_err
+
+
 async def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("html", help="index.html 路径")
@@ -105,7 +133,7 @@ async def main():
     html_path = os.path.abspath(args.html)
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(args=["--force-color-profile=srgb", "--disable-lcd-text"])
+        browser = await launch_browser(p)
         page = await browser.new_page(viewport={"width": 1920, "height": 1080}, device_scale_factor=args.scale)
         page.on("pageerror", lambda e: print(f"[页面JS错误] {e}", file=sys.stderr))
         await page.goto(f"file://{html_path}")

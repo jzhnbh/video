@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Vibe知识大赏 · 《同一天》</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700;900&family=EB+Garamond:ital@0;1&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #050510; }
+  #stage { position: relative; width: 1920px; height: 1080px; background: #050510; overflow: hidden; }
+  .layer { position: absolute; inset: 0; }
+  #bg { z-index: 1; } #scene { z-index: 10; } #overlay { z-index: 20; }
+
+  #watermark { position: absolute; top: 40px; left: 56px; z-index: 30;
+    font: 500 26px 'Noto Sans SC'; color: rgba(234,234,242,.45); letter-spacing: 2px; }
+  #toplabel { position: absolute; top: 44px; left: 0; right: 0; z-index: 30;
+    text-align: center; font: 500 26px 'Noto Sans SC'; color: #8A8AA0; letter-spacing: 5px; }
+  #annotation { position: absolute; top: 754px; left: 0; right: 0; z-index: 30;
+    text-align: center; font: 400 25px 'Noto Sans SC'; color: #8A8AA0; letter-spacing: 1px; }
+
+  #subtitle { position: absolute; top: 902px; left: 0; right: 0; z-index: 40; text-align: center;
+    font: 700 46px 'Noto Sans SC'; color: #EAEAF2; letter-spacing: 1px;
+    text-shadow: 0 2px 24px rgba(0,0,0,.85); }
+  #subtitle em { font-style: normal; color: #C9A96A; }
+  #subtitle-en { position: absolute; top: 970px; left: 0; right: 0; z-index: 40; text-align: center;
+    font: italic 400 26px 'EB Garamond', serif; color: #8A8AA0; letter-spacing: .4px; }
+
+  #titlecard { position: absolute; inset: 0; z-index: 50; display: none;
+    align-items: center; justify-content: center; flex-direction: column; gap: 24px; }
+  #titlecard .series { font: 500 24px 'Noto Sans SC'; color: rgba(201,169,106,.8); letter-spacing: 14px; text-indent: 14px; }
+  #titlecard .name { font: 900 122px 'Noto Serif SC', serif; color: #C9A96A; letter-spacing: 8px;
+    text-shadow: 0 4px 46px rgba(201,169,106,.28); }
+  #titlecard .q { font: 500 34px 'Noto Sans SC'; color: #EAEAF2; margin-top: 14px; letter-spacing: 1px; }
+  #titlecard .q-en { font: italic 400 27px 'EB Garamond', serif; color: #8A8AA0; }
+
+  #endcard { position: absolute; inset: 0; z-index: 50; display: none;
+    align-items: center; justify-content: center; flex-direction: column; gap: 18px;
+    background: rgba(5,5,16,.94); }
+  #endcard .series { font: 500 22px 'Noto Sans SC'; color: rgba(201,169,106,.75); letter-spacing: 12px; text-indent: 12px; }
+  #endcard .name { font: 900 92px 'Noto Serif SC', serif; color: #C9A96A; letter-spacing: 6px; }
+  #endcard .stat { font: 500 24px 'Noto Sans SC'; color: #8A8AA0; margin-top: 6px; letter-spacing: 1px; }
+  #endcard .ref { font: 400 21px 'Noto Sans SC'; color: #8A8AA0; margin-top: 22px; text-align: center; line-height: 1.7; }
+  #endcard .ref em { font: italic 400 21px 'EB Garamond', serif; color: #B9B9C8; }
+  #endcard .author { font: 500 22px 'Noto Sans SC'; color: rgba(234,234,242,.55); letter-spacing: 2px; margin-top: 18px; }
+  #endcard .ask { font: 500 28px 'Noto Sans SC'; color: #EAEAF2; margin-top: 10px; letter-spacing: 1px; }
+  #endcard .ask em { font-style: normal; color: #C9A96A; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="bg" class="layer" width="1920" height="1080"></canvas>
+  <canvas id="scene" class="layer" width="1920" height="1080"></canvas>
+  <div id="overlay" class="layer"></div>
+  <div id="watermark">@登风</div>
+  <div id="toplabel"></div>
+  <div id="annotation"></div>
+  <div id="subtitle"></div>
+  <div id="subtitle-en"></div>
+  <div id="titlecard">
+    <div class="series">VIBE知识大赏</div>
+    <div class="name">《同一天》</div>
+    <div class="q">23个人里，为什么总有人同一天生日？</div>
+    <div class="q-en">The Day We Share</div>
+  </div>
+  <div id="endcard">
+    <div class="series">VIBE知识大赏</div>
+    <div class="name">《同一天》</div>
+    <div class="stat">23 人 → 50.7% · 253 对 · 一个固定种子的模拟</div>
+    <div class="ref">声明：本片是数学概率演示，假设 365 天等概率、忽略闰日与双胞胎，不是生日预测。<br>
+      参考：R. von Mises, <em>Über Aufteilungs- und Besetzungs-Wahrscheinlichkeiten</em>, 1939.</div>
+    <div class="author">@登风 出品</div>
+    <div class="ask">你班里，有多少人<em>同一天</em>生日？</div>
+  </div>
+</div>
+<script>
+/* ================= 配置 ================= */
+const CFG = {
+  duration: 130, fps: 30,
+  accent: '#C9A96A', ink: '#EAEAF2', dim: '#8A8AA0',
+  ice: '#7FA6C8', red: '#B53A2F', paper: '#EDE4D3',
+  topic: '生日问题'
+};
+
+/* 旁白字幕：[起, 止, 中文, 英文] */
+const SUBTITLES = [
+  [0.0,3.0,'一间教室，23 个人。','Twenty-three people in one room.'],
+  [3.0,6.0,'两人生日相同，概率<em>超过一半</em>。','Two share a birthday: more likely than not.'],
+  [6.0,8.0,'你大概不信。','You probably don\'t believe it.'],
+  [8.0,10.5,'365 天，23 个人，直觉说太小了。','365 days. 23 people. It feels too small.'],
+  [10.5,13.0,'数学说：已经过半。','The math says: already over half.'],
+  [20.0,23.0,'1939 年，伊斯坦布尔。','Istanbul, 1939.'],
+  [23.0,26.0,'冯·米塞斯写下「占用概率」。','Von Mises writes on occupancy.'],
+  [26.0,29.0,'23 个人，365 个格子，会撞吗？','23 people, 365 slots. A collision?'],
+  [29.0,32.0,'他算出的答案：<em>超过一半</em>。','His answer: more than half.'],
+  [32.0,35.0,'论文登在伊斯坦布尔大学学报。','It ran in an Istanbul University journal.'],
+  [35.0,37.0,'后来，它被叫作「生日问题」。','Later, it was called the birthday problem.'],
+  [40.0,42.5,'一年，365 个格子。','One year: 365 slots.'],
+  [42.5,45.0,'每个人，随机落进一格。','Each person lands at random.'],
+  [45.0,47.5,'同一格，就算「同一天」。','Same slot: a shared birthday.'],
+  [47.5,50.0,'先试一次，23 个人。','First, one trial. 23 people.'],
+  [50.0,52.5,'每个人，一个日期。','One person, one date.'],
+  [56.0,58.5,'第 194 格，撞了。','Slot 194: a collision.'],
+  [58.5,61.0,'第 222 格，又撞了。','Slot 222: another.'],
+  [61.0,63.5,'一次实验，两次。','One trial, two collisions.'],
+  [67.0,69.5,'一次不算数，重复一千次。','Once proves nothing. Repeat a thousand times.'],
+  [69.5,72.0,'一千次里，<em>510 次</em>出现同一天。','510 of 1,000 rooms had a match.'],
+  [72.0,74.5,'理论值：50.7%。','Theory: 50.7 percent.'],
+  [74.5,77.0,'22 个人，47.6%。','At 22 people: 47.6 percent.'],
+  [77.0,79.5,'多一个人，跨过一半。','One more person crosses half.'],
+  [79.5,82.0,'30 个人：70.6%。','Thirty: 70.6 percent.'],
+  [85.0,87.5,'七十个人，几乎必然。','Seventy: almost certain.'],
+  [87.5,90.0,'为什么涨得这么快？','Why does it climb so fast?'],
+  [90.0,92.5,'23 个人，不是 23 次比较。','23 people are not 23 comparisons.'],
+  [92.5,95.0,'是 <em>253 对</em>。','They are 253 pairs.'],
+  [95.0,97.5,'每对都可能撞车。','Every pair can collide.'],
+  [100.0,102.5,'你算的是「和我同一天」：<em>5.9%</em>。','You counted "same as me": 5.9 percent.'],
+  [102.5,105.0,'题目问的是「任意两个人」。','The question asks "any two."'],
+  [105.0,107.5,'那是 <em>50.7%</em>。','That\'s 50.7 percent.'],
+  [107.5,110.0,'你只数了 22 对，漏了 <em>231 对</em>。','You counted 22 pairs. You missed 231.'],
+  [110.0,112.5,'所以，同一天不是巧合。','So a shared birthday isn\'t coincidence.'],
+  [112.5,115.0,'是「对数」在替你做加法。','It\'s the pairs doing the addition.'],
+  [115.0,117.5,'教室、群聊、婚礼，都一样。','Classrooms, group chats, weddings: same rule.'],
+  [117.5,120.0,'下次遇到，别惊讶。','Next time, don\'t be surprised.'],
+  [122.0,124.5,'同一天，从来不是巧合。','Same day was never chance.'],
+];
+
+const TITLE_CARD = [13, 20];
+const SECTIONS = [
+  [0, '生日问题 · THE BIRTHDAY PROBLEM', ''],
+  [13, '', ''],
+  [20, '1939 · 伊斯坦布尔 · ISTANBUL', '图为示意'],
+  [37, '', ''],
+  [40, '规则 · THE RULES', '假设：365 天等概率 · 忽略闰日与双胞胎'],
+  [47.5, '第 1 次实验 · TRIAL 01', '模拟'],
+  [63.5, '1000 次重复 · 1,000 ROOMS', '模拟数据'],
+  [72, '同一个问题，六个数', '模拟 510/1000 · 理论 50.7%'],
+  [82, '理论曲线 · THE CURVE', '公式计算'],
+  [90, '253 对 · 253 PAIRS', 'C(23,2) = 253'],
+  [100, '你算的是哪一问？', '同版式对照'],
+  [107.5, '253 对 · 253 PAIRS', '红 = 你自己的 22 对 · 金 = 其余 231 对'],
+  [110, '教室 · 群聊 · 婚礼', '同一套规则'],
+  [120, '收尾 · OUTRO', ''],
+  [124.5, '', ''],
+];
+
+/* ================= 工具 ================= */
+const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp  = (a,b,t)=>a+(b-a)*t;
+const easeInOut = t => t<.5 ? 2*t*t : 1-((-2*t+2)**2)/2;
+const easeOut = t => 1-(1-t)**3;
+const easeIn = t => t*t*t;
+function mulberry32(seed){ return function(){ let t = seed += 0x6D2B79F5;
+  t = Math.imul(t ^ t>>>15, t|1); t ^= t + Math.imul(t ^ t>>>7, t|61);
+  return ((t ^ t>>>14)>>>0)/4294967296; }; }
+function roundRect(c,x,y,w,h,r){ r=Math.min(r,Math.abs(w)/2,Math.abs(h)/2); c.beginPath();
+  c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+function rgba(hex,a){ const h=hex.replace('#',''); const n=parseInt(h.length===3?h.split('').map(x=>x+x).join(''):h,16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+function starPath(c,x,y,r,spikes,inner){ c.beginPath(); for(let i=0;i<spikes*2;i++){ const rr=i%2?inner:r; const a=i*Math.PI/spikes-Math.PI/2; c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);} c.closePath(); }

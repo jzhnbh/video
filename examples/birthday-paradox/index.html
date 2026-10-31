@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Vibe知识大赏 · 《同一天》</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700;900&family=EB+Garamond:ital@0;1&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #050510; }
+  #stage { position: relative; width: 1920px; height: 1080px; background: #050510; overflow: hidden; }
+  .layer { position: absolute; inset: 0; }
+  #bg { z-index: 1; } #scene { z-index: 10; } #overlay { z-index: 20; }
+
+  #watermark { position: absolute; top: 40px; left: 56px; z-index: 30;
+    font: 500 26px 'Noto Sans SC'; color: rgba(234,234,242,.45); letter-spacing: 2px; }
+  #toplabel { position: absolute; top: 44px; left: 0; right: 0; z-index: 30;
+    text-align: center; font: 500 26px 'Noto Sans SC'; color: #8A8AA0; letter-spacing: 5px; }
+  #annotation { position: absolute; top: 754px; left: 0; right: 0; z-index: 30;
+    text-align: center; font: 400 25px 'Noto Sans SC'; color: #8A8AA0; letter-spacing: 1px; }
+
+  #subtitle { position: absolute; top: 902px; left: 0; right: 0; z-index: 40; text-align: center;
+    font: 700 46px 'Noto Sans SC'; color: #EAEAF2; letter-spacing: 1px;
+    text-shadow: 0 2px 24px rgba(0,0,0,.85); }
+  #subtitle em { font-style: normal; color: #C9A96A; }
+  #subtitle-en { position: absolute; top: 970px; left: 0; right: 0; z-index: 40; text-align: center;
+    font: italic 400 26px 'EB Garamond', serif; color: #8A8AA0; letter-spacing: .4px; }
+
+  #titlecard { position: absolute; inset: 0; z-index: 50; display: none;
+    align-items: center; justify-content: center; flex-direction: column; gap: 24px; }
+  #titlecard .series { font: 500 24px 'Noto Sans SC'; color: rgba(201,169,106,.8); letter-spacing: 14px; text-indent: 14px; }
+  #titlecard .name { font: 900 122px 'Noto Serif SC', serif; color: #C9A96A; letter-spacing: 8px;
+    text-shadow: 0 4px 46px rgba(201,169,106,.28); }
+  #titlecard .q { font: 500 34px 'Noto Sans SC'; color: #EAEAF2; margin-top: 14px; letter-spacing: 1px; }
+  #titlecard .q-en { font: italic 400 27px 'EB Garamond', serif; color: #8A8AA0; }
+
+  #endcard { position: absolute; inset: 0; z-index: 50; display: none;
+    align-items: center; justify-content: center; flex-direction: column; gap: 18px;
+    background: rgba(5,5,16,.94); }
+  #endcard .series { font: 500 22px 'Noto Sans SC'; color: rgba(201,169,106,.75); letter-spacing: 12px; text-indent: 12px; }
+  #endcard .name { font: 900 92px 'Noto Serif SC', serif; color: #C9A96A; letter-spacing: 6px; }
+  #endcard .stat { font: 500 24px 'Noto Sans SC'; color: #8A8AA0; margin-top: 6px; letter-spacing: 1px; }
+  #endcard .ref { font: 400 21px 'Noto Sans SC'; color: #8A8AA0; margin-top: 22px; text-align: center; line-height: 1.7; }
+  #endcard .ref em { font: italic 400 21px 'EB Garamond', serif; color: #B9B9C8; }
+  #endcard .author { font: 500 22px 'Noto Sans SC'; color: rgba(234,234,242,.55); letter-spacing: 2px; margin-top: 18px; }
+  #endcard .ask { font: 500 28px 'Noto Sans SC'; color: #EAEAF2; margin-top: 10px; letter-spacing: 1px; }
+  #endcard .ask em { font-style: normal; color: #C9A96A; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="bg" class="layer" width="1920" height="1080"></canvas>
+  <canvas id="scene" class="layer" width="1920" height="1080"></canvas>
+  <div id="overlay" class="layer"></div>
+  <div id="watermark">@登风</div>
+  <div id="toplabel"></div>
+  <div id="annotation"></div>
+  <div id="subtitle"></div>
+  <div id="subtitle-en"></div>
+  <div id="titlecard">
+    <div class="series">VIBE知识大赏</div>
+    <div class="name">《同一天》</div>
+    <div class="q">23个人里，为什么总有人同一天生日？</div>
+    <div class="q-en">The Day We Share</div>
+  </div>
+  <div id="endcard">
+    <div class="series">VIBE知识大赏</div>
+    <div class="name">《同一天》</div>
+    <div class="stat">23 人 → 50.7% · 253 对 · 一个固定种子的模拟</div>
+    <div class="ref">声明：本片是数学概率演示，假设 365 天等概率、忽略闰日与双胞胎，不是生日预测。<br>
+      参考：R. von Mises, <em>Über Aufteilungs- und Besetzungs-Wahrscheinlichkeiten</em>, 1939.</div>
+    <div class="author">@登风 出品</div>
+    <div class="ask">你班里，有多少人<em>同一天</em>生日？</div>
+  </div>
+</div>
+<script>
+/* ================= 配置 ================= */
+const CFG = {
+  duration: 130, fps: 30,
+  accent: '#C9A96A', ink: '#EAEAF2', dim: '#8A8AA0',
+  ice: '#7FA6C8', red: '#B53A2F', paper: '#EDE4D3',
+  topic: '生日问题'
+};
+
+/* 旁白字幕：[起, 止, 中文, 英文] */
+const SUBTITLES = [
+  [0.0,3.0,'一间教室，23 个人。','Twenty-three people in one room.'],
+  [3.0,6.0,'两人生日相同，概率<em>超过一半</em>。','Two share a birthday: more likely than not.'],
+  [6.0,8.0,'你大概不信。','You probably don\'t believe it.'],
+  [8.0,10.5,'365 天，23 个人，直觉说太小了。','365 days. 23 people. It feels too small.'],
+  [10.5,13.0,'数学说：已经过半。','The math says: already over half.'],
+  [20.0,23.0,'1939 年，伊斯坦布尔。','Istanbul, 1939.'],
+  [23.0,26.0,'冯·米塞斯写下「占用概率」。','Von Mises writes on occupancy.'],
+  [26.0,29.0,'23 个人，365 个格子，会撞吗？','23 people, 365 slots. A collision?'],
+  [29.0,32.0,'他算出的答案：<em>超过一半</em>。','His answer: more than half.'],
+  [32.0,35.0,'论文登在伊斯坦布尔大学学报。','It ran in an Istanbul University journal.'],
+  [35.0,37.0,'后来，它被叫作「生日问题」。','Later, it was called the birthday problem.'],
+  [40.0,42.5,'一年，365 个格子。','One year: 365 slots.'],
+  [42.5,45.0,'每个人，随机落进一格。','Each person lands at random.'],
+  [45.0,47.5,'同一格，就算「同一天」。','Same slot: a shared birthday.'],
+  [47.5,50.0,'先试一次，23 个人。','First, one trial. 23 people.'],
+  [50.0,52.5,'每个人，一个日期。','One person, one date.'],
+  [56.0,58.5,'第 194 格，撞了。','Slot 194: a collision.'],
+  [58.5,61.0,'第 222 格，又撞了。','Slot 222: another.'],
+  [61.0,63.5,'一次实验，两次。','One trial, two collisions.'],
+  [67.0,69.5,'一次不算数，重复一千次。','Once proves nothing. Repeat a thousand times.'],
+  [69.5,72.0,'一千次里，<em>510 次</em>出现同一天。','510 of 1,000 rooms had a match.'],
+  [72.0,74.5,'理论值：50.7%。','Theory: 50.7 percent.'],
+  [74.5,77.0,'22 个人，47.6%。','At 22 people: 47.6 percent.'],
+  [77.0,79.5,'多一个人，跨过一半。','One more person crosses half.'],
+  [79.5,82.0,'30 个人：70.6%。','Thirty: 70.6 percent.'],
+  [85.0,87.5,'七十个人，几乎必然。','Seventy: almost certain.'],
+  [87.5,90.0,'为什么涨得这么快？','Why does it climb so fast?'],
+  [90.0,92.5,'23 个人，不是 23 次比较。','23 people are not 23 comparisons.'],
+  [92.5,95.0,'是 <em>253 对</em>。','They are 253 pairs.'],
+  [95.0,97.5,'每对都可能撞车。','Every pair can collide.'],
+  [100.0,102.5,'你算的是「和我同一天」：<em>5.9%</em>。','You counted "same as me": 5.9 percent.'],
+  [102.5,105.0,'题目问的是「任意两个人」。','The question asks "any two."'],
+  [105.0,107.5,'那是 <em>50.7%</em>。','That\'s 50.7 percent.'],
+  [107.5,110.0,'你只数了 22 对，漏了 <em>231 对</em>。','You counted 22 pairs. You missed 231.'],
+  [110.0,112.5,'所以，同一天不是巧合。','So a shared birthday isn\'t coincidence.'],
+  [112.5,115.0,'是「对数」在替你做加法。','It\'s the pairs doing the addition.'],
+  [115.0,117.5,'教室、群聊、婚礼，都一样。','Classrooms, group chats, weddings: same rule.'],
+  [117.5,120.0,'下次遇到，别惊讶。','Next time, don\'t be surprised.'],
+  [122.0,124.5,'同一天，从来不是巧合。','Same day was never chance.'],
+];
+
+const TITLE_CARD = [13, 20];
+const SECTIONS = [
+  [0, '生日问题 · THE BIRTHDAY PROBLEM', ''],
+  [13, '', ''],
+  [20, '1939 · 伊斯坦布尔 · ISTANBUL', '图为示意'],
+  [37, '', ''],
+  [40, '规则 · THE RULES', '假设：365 天等概率 · 忽略闰日与双胞胎'],
+  [47.5, '第 1 次实验 · TRIAL 01', '模拟'],
+  [63.5, '1000 次重复 · 1,000 ROOMS', '模拟数据'],
+  [72, '同一个问题，六个数', '模拟 510/1000 · 理论 50.7%'],
+  [82, '理论曲线 · THE CURVE', '公式计算'],
+  [90, '253 对 · 253 PAIRS', 'C(23,2) = 253'],
+  [100, '你算的是哪一问？', '同版式对照'],
+  [107.5, '253 对 · 253 PAIRS', '红 = 你自己的 22 对 · 金 = 其余 231 对'],
+  [110, '教室 · 群聊 · 婚礼', '同一套规则'],
+  [120, '收尾 · OUTRO', ''],
+  [124.5, '', ''],
+];
+
+/* ================= 工具 ================= */
+const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp  = (a,b,t)=>a+(b-a)*t;
+const easeInOut = t => t<.5 ? 2*t*t : 1-((-2*t+2)**2)/2;
+const easeOut = t => 1-(1-t)**3;
+const easeIn = t => t*t*t;
+function mulberry32(seed){ return function(){ let t = seed += 0x6D2B79F5;
+  t = Math.imul(t ^ t>>>15, t|1); t ^= t + Math.imul(t ^ t>>>7, t|61);
+  return ((t ^ t>>>14)>>>0)/4294967296; }; }
+function roundRect(c,x,y,w,h,r){ r=Math.min(r,Math.abs(w)/2,Math.abs(h)/2); c.beginPath();
+  c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+function rgba(hex,a){ const h=hex.replace('#',''); const n=parseInt(h.length===3?h.split('').map(x=>x+x).join(''):h,16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+function starPath(c,x,y,r,spikes,inner){ c.beginPath(); for(let i=0;i<spikes*2;i++){ const rr=i%2?inner:r; const a=i*Math.PI/spikes-Math.PI/2; c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);} c.closePath(); }
+
+const SIM = {"seed": 11, "count": 510, "total": 1000, "firstDays": [187, 194, 222, 216, 311, 197, 30, 194, 222, 165, 176, 308, 154, 245, 249, 59, 66, 101, 145, 138, 213, 47, 218], "firstCollisions": [[1, 7, 194], [2, 8, 222]]};
+const SIM_FLAGS = "1111101001001011110011100111111100001011110001101001100100110010001111100110101111101011000111000101100100110110011111000101110111100011000011011100000111111011101111101100100111101000111111101100111110101111000001100101010101001010100110100111100100001111010111101111000100010101100000011110101000010110110101000000110100010110010100110010100001011010101111100111001110001100100010001100101010001101000000101101101101101110001100100100111110001000101000011001110100110000100110001000100010110110010001000110111101110010100000101110001111101110100101000010110001010010101011101011101001001101111111101010010010110110100110010101000110000100001111110111011100000001100011011011101001110001101110111111111011011111010100001011011010001100100000011000001111000100001110110011110000011111110011011101101000111100100111000000100100100010100011001001111101100100011000010101111111100110001011101110111010010011000010001011110110100101101111101111101000000010011110100001010100110000100100111100010000010001";
+const SIM_PREFIX = (()=>{const a=[0];for(let i=0;i<SIM_FLAGS.length;i++)a.push(a[i]+(SIM_FLAGS.charCodeAt(i)===49?1:0));return a;})();
+
+
+/* ================= 模拟数据与画布 ================= */
+const DAYS = SIM.firstDays.slice();
+const COLLS = SIM.firstCollisions.map(([a,b,day])=>({a,b,day}));
+const PAIRS = (()=>{ const out=[]; for(let i=0;i<23;i++) for(let j=i+1;j<23;j++) out.push([i,j]); return out; })();
+const YOU = 0;
+
+const cvBG = document.getElementById('bg'), ctBG = cvBG.getContext('2d');
+const cvScene = document.getElementById('scene'), ctScene = cvScene.getContext('2d');
+const starRnd = mulberry32(20261031);
+const STARS = Array.from({length:120},()=>({x:starRnd()*1920,y:starRnd()*1080,r:starRnd()*1.5+.25,p:starRnd()*Math.PI*2,s:starRnd()*.35+.15}));
+const DUST = Array.from({length:34},()=>({x:starRnd()*1920,y:starRnd()*760,r:starRnd()*2+.6,p:starRnd()*Math.PI*2,s:starRnd()*.5+.25}));
+
+/* 背景：深蓝黑 + 极淡星点 + 暗角 */
+function drawBG(t){
+  ctBG.clearRect(0,0,1920,1080);
+  const g = ctBG.createRadialGradient(960,470,80, 960,470,1250);
+  g.addColorStop(0,'#10102A'); g.addColorStop(.48,'#090918'); g.addColorStop(1,'#04040C');
+  ctBG.fillStyle = g; ctBG.fillRect(0,0,1920,1080);
+
+  for(const s of STARS){
+    const a = .18 + .42*Math.abs(Math.sin(t*.55 + s.p));
+    ctBG.fillStyle = `rgba(224,228,246,${a})`;
+    ctBG.beginPath(); ctBG.arc(s.x,s.y,s.r,0,Math.PI*2); ctBG.fill();
+  }
+  for(const d of DUST){
+    const x = d.x + Math.sin(t*.18+d.p)*18;
+    const y = d.y + Math.cos(t*.12+d.p)*10;
+    ctBG.fillStyle = `rgba(201,169,106,${.05 + .05*Math.abs(Math.sin(t*.4+d.p))})`;
+    ctBG.beginPath(); ctBG.arc(x,y,d.r,0,Math.PI*2); ctBG.fill();
+  }
+  const v = ctBG.createRadialGradient(960,500,420, 960,500,1180);
+  v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.42)');
+  ctBG.fillStyle = v; ctBG.fillRect(0,0,1920,1080);
+
+  /* 片名卡暗场里留两颗金点，成为全片记忆 */
+  if(t>=13 && t<20){
+    const a = .12 + .10*Math.abs(Math.sin((t-13)*.7));
+    goldGlow(ctBG, 760, 510, 600, a, '#C9A96A');
+    goldGlow(ctBG, 1180, 590, 520, a*.8, '#C9A96A');
+  }
+  if(t>=120){
+    const k = clamp((t-120)/2.0,0,1);
+    goldGlow(ctBG, 820, 380, 340, .08*k, '#C9A96A');
+    goldGlow(ctBG, 1100, 620, 300, .07*k, '#C9A96A');
+  }
+}
+
+function goldGlow(c,x,y,r,a,color){
+  const g=c.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,rgba(color,a)); g.addColorStop(.35,rgba(color,a*.35)); g.addColorStop(1,rgba(color,0));
+  c.fillStyle=g; c.beginPath(); c.arc(x,y,r,0,Math.PI*2); c.fill();
+}
+
+/* ================= 通用纸艺与标注 ================= */
+function paperTexture(c,w,h,a=1){
+  const g = c.createLinearGradient(-w/2,-h/2,w/2,h/2);
+  g.addColorStop(0,`rgba(255,252,240,${.24*a})`); g.addColorStop(.55,`rgba(237,228,211,${.04*a})`);
+  g.addColorStop(1,`rgba(124,102,72,${.10*a})`);
+  c.fillStyle=g; c.fillRect(-w/2,-h/2,w,h);
+  c.strokeStyle=`rgba(90,72,48,${.10*a})`; c.lineWidth=1;
+  for(let i=0;i<7;i++){
+    const yy=-h/2+8+i*h/7;
+    c.beginPath(); c.moveTo(-w/2+8,yy); c.lineTo(w/2-8,yy); c.stroke();
+  }
+}
+
+function drawPaperCard(c,x,y,w,h,num,day,opt={}){
+  const rot=opt.rot||0, alpha=opt.alpha??1;
+  c.save(); c.globalAlpha*=alpha; c.translate(x,y); c.rotate(rot);
+  c.shadowColor='rgba(0,0,0,.55)'; c.shadowBlur=opt.shadow??20; c.shadowOffsetY=7;
+  c.fillStyle='#EDE4D3'; roundRect(c,-w/2,-h/2,w,h,Math.min(6,w/10)); c.fill();
+  c.shadowColor='transparent';
+  paperTexture(c,w,h,.7);
+  c.strokeStyle='rgba(70,52,30,.20)'; c.lineWidth=1; roundRect(c,-w/2+5,-h/2+5,w-10,h-10,3); c.stroke();
+
+  const compact = w < 46;
+  if(!compact){
+    const hx=0, hy=-h*.20, hr=Math.min(w,h)*.11;
+    c.fillStyle='rgba(74,58,39,.56)';
+    c.beginPath(); c.arc(hx,hy,hr,0,Math.PI*2); c.fill();
+    c.beginPath(); c.moveTo(-hr*1.55,hy+hr*2.1); c.quadraticCurveTo(0,hy+hr*.62,hr*1.55,hy+hr*2.1); c.closePath(); c.fill();
+    c.font=`500 ${Math.max(12,w*.145)}px 'Noto Sans SC'`; c.fillStyle='rgba(74,58,39,.62)';
+    c.textAlign='left'; c.textBaseline='top'; c.fillText('#'+String(num).padStart(2,'0'),-w/2+10,-h/2+8);
+    c.font=`900 ${Math.max(16,w*.24)}px 'Noto Serif SC'`; c.fillStyle='#3A2E20';
+    c.textAlign='center'; c.textBaseline='middle'; c.fillText(String(day),0,h*.26);
+    c.font=`500 ${Math.max(9,w*.09)}px 'Noto Sans SC'`; c.fillStyle='rgba(74,58,39,.45)';
+    c.fillText('BIRTH DATE',0,h*.26+Math.max(15,w*.16));
+  } else {
+    c.font=`900 ${Math.max(8,w*.34)}px 'Noto Serif SC'`; c.fillStyle='#3A2E20';
+    c.textAlign='center'; c.textBaseline='middle'; c.fillText(String(day),0,1);
+    c.font=`500 ${Math.max(6,w*.20)}px 'Noto Sans SC'`; c.fillStyle='rgba(74,58,39,.50)';
+    c.textAlign='left'; c.textBaseline='top'; c.fillText('#'+num,-w/2+3,-h/2+2);
+  }
+  if(opt.gold){
+    c.shadowColor=rgba('#C9A96A',.8); c.shadowBlur=18;
+    c.strokeStyle=rgba('#C9A96A',.9); c.lineWidth=Math.max(2,w*.035);
+    roundRect(c,-w/2-2,-h/2-2,w+4,h+4,3); c.stroke(); c.shadowColor='transparent';
+  }
+  c.restore();
+}
+
+function drawSeal(c,x,y,text,opt={}){
+  const rot=opt.rot??-.08, s=opt.scale??1, a=opt.alpha??1, color=opt.color||CFG.accent;
+  c.save(); c.globalAlpha*=a; c.translate(x,y); c.rotate(rot); c.scale(s,s);
+  c.font=`900 ${opt.size||46}px 'Noto Serif SC'`; c.textAlign='center'; c.textBaseline='middle';
+  const tw=c.measureText(text).width; const w=tw+44, h=(opt.size||46)+34;
+  roundRect(c,-w/2,-h/2,w,h,4);
+  c.fillStyle=rgba(color,.06); c.fill();
+  c.strokeStyle=rgba(color,.86); c.lineWidth=3; c.stroke();
+  roundRect(c,-w/2+6,-h/2+6,w-12,h-12,2);
+  c.lineWidth=1.2; c.strokeStyle=rgba(color,.55); c.stroke();
+  c.fillStyle=color; c.fillText(text,0,2);
+  c.restore();
+}
+
+function drawPanel(c,x,y,w,h,opt={}){
+  c.save(); c.globalAlpha*=opt.alpha??1;
+  roundRect(c,x,y,w,h,10);
+  c.fillStyle=opt.fill||'rgba(10,10,26,.66)'; c.fill();
+  c.strokeStyle=opt.stroke||'rgba(201,169,106,.24)'; c.lineWidth=1.2; c.stroke();
+  c.restore();
+}
+
+function drawRuleCard(c,t,x,y,w,h){
+  const active = t<42.5?1:(t<45?2:3);
+  c.save(); c.translate(x,y); c.rotate(-.025);
+  c.shadowColor='rgba(0,0,0,.5)'; c.shadowBlur=28; c.shadowOffsetY=10;
+  c.fillStyle='#EDE4D3'; roundRect(c,-w/2,-h/2,w,h,8); c.fill();
+  c.shadowColor='transparent'; paperTexture(c,w,h,.8);
+  c.strokeStyle='rgba(70,52,30,.22)'; c.lineWidth=1; roundRect(c,-w/2+7,-h/2+7,w-14,h-14,4); c.stroke();
+
+  c.fillStyle='#3A2E20'; c.textAlign='left'; c.textBaseline='top';
+  c.font="900 30px 'Noto Serif SC'"; c.fillText('游戏规则',-w/2+28,-h/2+24);
+  c.font="500 13px 'Noto Sans SC'"; c.fillStyle='rgba(58,46,32,.55)'; c.fillText('THE RULES OF THE GAME',-w/2+29,-h/2+64);
+
+  const rows=[
+    ['①','365 天等概率','EVERY DAY EQUAL'],
+    ['②','随机落格','LAND AT RANDOM'],
+    ['③','同格 = 同一天','SAME SLOT = SAME DAY'],
+  ];
+  rows.forEach((r,i)=>{
+    const yy=-h/2+105+i*86;
+    const on=i<active;
+    c.globalAlpha = on?1:.25;
+    const glow=on?(1+.25*Math.abs(Math.sin(t*1.3+i))):0;
+    c.fillStyle=on?rgba('#C9A96A',.12):'rgba(90,72,48,.05)';
+    roundRect(c,-w/2+20,yy,w-40,68,6); c.fill();
+    c.strokeStyle=on?rgba('#C9A96A',.5):'rgba(90,72,48,.16)'; c.lineWidth=1.2; c.stroke();
+    c.fillStyle=on?'#9E6E2F':'rgba(58,46,32,.35)';
+    c.font=`900 27px 'Noto Serif SC'`; c.textAlign='center'; c.textBaseline='middle';
+    c.fillText(r[0],-w/2+52,yy+30);
+    c.textAlign='left'; c.fillStyle=on?'#3A2E20':'rgba(58,46,32,.40)';
+    c.font=`700 24px 'Noto Sans SC'`; c.fillText(r[1],-w/2+82,yy+23);
+    c.font=`500 12px 'Noto Sans SC'`; c.fillStyle=on?'rgba(58,46,32,.52)':'rgba(58,46,32,.28)';
+    c.fillText(r[2],-w/2+83,yy+50);
+    if(on){ c.shadowColor=rgba('#C9A96A',.5); c.shadowBlur=14*glow; c.fillStyle=rgba('#C9A96A',.7);
+      c.beginPath(); c.arc(-w/2+52,yy+30,3.2,0,Math.PI*2); c.fill(); c.shadowColor='transparent'; }
+  });
+  c.restore();
+}
+
+/* 右侧 0–100% 概率表：竖直刻度，50% 金线 */
+function drawGauge(c,x,y,w,h,target,opt={}){
+  const a=opt.alpha??1, compact=opt.compact, valColor=opt.color||CFG.accent;
+  c.save(); c.globalAlpha*=a;
+  const trackX = x + w*.52, top=y+42, bot=y+h-30, span=bot-top;
+  if(!compact){
+    drawPanel(c,x-24,y-26,w+48,h+52,{alpha:.85,stroke:'rgba(201,169,106,.20)'});
+    c.fillStyle=rgba('#C9A96A',.78); c.font="500 15px 'Noto Sans SC'"; c.textAlign='left'; c.textBaseline='top';
+    c.fillText('至少一对同一天',x,y-16);
+    c.fillStyle='rgba(138,138,160,.7)'; c.font="500 10px 'Noto Sans SC'";
+    c.fillText('PROBABILITY',x,y+3);
+  }
+  const ty = bot - clamp(target,0,100)/100*span;
+  const gr=c.createLinearGradient(trackX,top, trackX,bot);
+  gr.addColorStop(0, rgba('#C9A96A',.7)); gr.addColorStop(.5,rgba('#7FA6C8',.36)); gr.addColorStop(1,rgba('#7FA6C8',.08));
+  roundRect(c,trackX-5,top,10,span,5); c.fillStyle='rgba(20,22,42,.78)'; c.fill();
+  c.strokeStyle='rgba(201,169,106,.22)'; c.lineWidth=1; c.stroke();
+
+  for(let p=0;p<=100;p+=10){
+    const yy=bot-p/100*span;
+    const major=p%20===0;
+    c.strokeStyle=`rgba(138,138,160,${major?.32:.12})`;
+    c.lineWidth=1; c.beginPath(); c.moveTo(trackX-13,yy); c.lineTo(trackX+13,yy); c.stroke();
+    if(major && !compact){
+      c.fillStyle='rgba(138,138,160,.62)'; c.font="400 11px 'Noto Sans SC'"; c.textAlign='right'; c.textBaseline='middle';
+      c.fillText(p+'%',trackX-23,yy);
+    }
+  }
+  const y50=bot-0.5*span;
+  c.strokeStyle=rgba('#C9A96A',.55); c.lineWidth=1.3; c.setLineDash([6,5]);
+  c.beginPath(); c.moveTo(trackX-20,y50); c.lineTo(trackX+24,y50); c.stroke(); c.setLineDash([]);
+  c.fillStyle=rgba('#C9A96A',.8); c.font="500 12px 'Noto Sans SC'"; c.textAlign='left'; c.textBaseline='middle';
+  c.fillText('50%',trackX+28,y50-9);
+
+  const pulse=.55+.45*Math.abs(Math.sin(performanceSafeTime()*.9));
+  goldGlow(c,trackX,ty,compact?18:30,.16*pulse,valColor);
+  c.fillStyle=valColor; c.beginPath(); c.arc(trackX,ty,compact?4.5:6,0,Math.PI*2); c.fill();
+  c.strokeStyle=rgba('#F1D9A8',.7); c.lineWidth=1; c.stroke();
+  c.strokeStyle=rgba('#C9A96A',.55); c.lineWidth=1;
+  c.beginPath(); c.moveTo(trackX,y50); c.lineTo(trackX,ty); c.stroke();
+
+  if(!compact){
+    c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle=valColor; c.font="900 46px 'Noto Serif SC'";
+    c.fillText(target.toFixed(1)+'%',x+w*.40,y+46);
+    c.fillStyle='rgba(138,138,160,.8)'; c.font="500 12px 'Noto Sans SC'";
+    c.fillText(opt.sub||'',x+w*.40,y+78);
+  }
+  c.restore();
+}
+
+/* 当前渲染时间（保证 render(t) 纯函数：绘制只读这个变量） */
+let NOW=0;
+function performanceSafeTime(){ return NOW; }
+
+/* ================= 365 格生日旅馆墙 ================= */
+function wallCell(layout,day){
+  const i=day-1, col=i%25, row=Math.floor(i/25);
+  return {
+    x:layout.x + col*(layout.cw+layout.gx),
+    y:layout.y + row*(layout.ch+layout.gy),
+    cw:layout.cw, ch:layout.ch
+  };
+}
+function drawWall(c,t,L={}){
+  const x=L.x??470, y=L.y??140, cw=L.cw??42, ch=L.ch??36, gx=L.gx??5, gy=L.gy??5;
+  const a=L.alpha??1;
+  const lit=L.litDays||null, gold=L.goldDays||null, all=L.allLit;
+  c.save(); c.globalAlpha*=a;
+  for(let day=1;day<=375;day++){
+    const col=(day-1)%25, row=Math.floor((day-1)/25);
+    const px=x+col*(cw+gx), py=y+row*(ch+gy);
+    const valid=day<=365;
+    const isLit=all || (lit && lit.has(day));
+    const isGold=gold && gold.has(day);
+    const breath=.5+.5*Math.sin(t*.8 + day*.17);
+    roundRect(c,px,py,cw,ch,Math.max(2,cw*.07));
+    if(!valid){
+      c.fillStyle='rgba(127,166,200,.012)'; c.fill();
+      c.strokeStyle='rgba(127,166,200,.035)'; c.lineWidth=.7; c.stroke();
+    } else if(isGold){
+      c.fillStyle=rgba('#C9A96A',.30+.12*breath); c.fill();
+      c.shadowColor=rgba('#C9A96A',.65); c.shadowBlur=14+8*breath;
+      c.strokeStyle=rgba('#F1D9A8',.85); c.lineWidth=1.8; c.stroke(); c.shadowColor='transparent';
+    } else if(isLit){
+      c.fillStyle=rgba('#7FA6C8',.18+.10*breath); c.fill();
+      c.strokeStyle=rgba('#7FA6C8',.58); c.lineWidth=1.1; c.stroke();
+    } else {
+      c.fillStyle=rgba('#7FA6C8',.105); c.fill();
+      c.strokeStyle=rgba('#7FA6C8',.27); c.lineWidth=.8; c.stroke();
+    }
+  }
+  c.restore();
+}
+
+function drawCollisionGlow(c,x,y,t,scale=1,alpha=1){
+  const k=.7+.3*Math.abs(Math.sin(t*1.15));
+  goldGlow(c,x,y,64*scale,.22*alpha*k,'#C9A96A');
+  c.save(); c.globalAlpha*=alpha; c.strokeStyle=rgba('#C9A96A',.92); c.lineWidth=2.2;
+  c.beginPath(); c.arc(x,y,25*scale,0,Math.PI*2); c.stroke();
+  c.strokeStyle=rgba('#F1D9A8',.38); c.lineWidth=1;
+  c.beginPath(); c.arc(x,y,33*scale,0,Math.PI*2); c.stroke();
+  c.restore();
+}
+
+function drawRoomGrid(c,t,opt={}){
+  const x0=opt.x??442, y0=opt.y??132, cw=opt.cw??20, ch=opt.ch??15, gx=opt.gx??4, gy=opt.gy??4;
+  const alpha=opt.alpha??1, upto=opt.upto??1000;
+  c.save(); c.globalAlpha*=alpha;
+  for(let i=0;i<1000;i++){
+    const col=i%40, row=Math.floor(i/40);
+    const px=x0+col*(cw+gx), py=y0+row*(ch+gy);
+    const on=i<upto;
+    const hit=SIM_FLAGS.charCodeAt(i)===49;
+    roundRect(c,px,py,cw,ch,2);
+    if(!on){ c.fillStyle='rgba(127,166,200,.03)'; c.fill(); c.strokeStyle='rgba(127,166,200,.07)'; c.lineWidth=.5; c.stroke(); }
+    else if(hit){
+      const b=.5+.5*Math.sin(t*.8+i*.2);
+      c.fillStyle=rgba('#C9A96A',.16+.10*b); c.fill();
+      c.strokeStyle=rgba('#C9A96A',.65); c.lineWidth=.9; c.stroke();
+    } else {
+      c.fillStyle=`rgba(127,166,200,${.10+.05*Math.abs(Math.sin(t*.5+i*.1))})`; c.fill();
+      c.strokeStyle='rgba(127,166,200,.28)'; c.lineWidth=.7; c.stroke();
+    }
+  }
+  c.restore();
+}
+
+/* 从 sim 表查前 n 间房命中数 */
+function hitCountAt(n){ return SIM_PREFIX[clamp(n,0,1000)]; }
+
+
+/* ================= 0–13s 钩子：教室 → 365 格墙 → 两格相撞 ================= */
+const SEATS = (()=>{
+  const out=[]; let n=0;
+  for(let row=0;row<5;row++){
+    const cols=row===4?3:5;
+    for(let col=0;col<cols;col++){
+      out.push({n:++n, col, cols, row});
+    }
+  }
+  return out;
+})();
+
+function seatPos(seat){
+  const gapX=174, gapY=96;
+  return {
+    x: 960 + (seat.col-(seat.cols-1)/2)*gapX,
+    y: 294 + seat.row*gapY
+  };
+}
+
+function drawClassroom(c,t,extraA=1){
+  const k = clamp((t-0.0)/1.2,0,1)*extraA;
+  const zoom = 1 + .035*easeOut(clamp(t/3,0,1));
+  c.save(); c.globalAlpha=k;
+  c.translate(960,520); c.scale(zoom,zoom); c.translate(-960,-520);
+
+  /* 教室地面与课桌 */
+  const floor = c.createLinearGradient(0,380,0,760);
+  floor.addColorStop(0,'rgba(30,32,54,.25)'); floor.addColorStop(1,'rgba(5,5,14,.02)');
+  c.fillStyle=floor; c.fillRect(0,330,1920,430);
+  c.strokeStyle='rgba(127,166,200,.08)'; c.lineWidth=1;
+  for(let y=420;y<760;y+=76){ c.beginPath(); c.moveTo(180,y); c.lineTo(1740,y); c.stroke(); }
+  for(let x=260;x<1740;x+=166){ c.beginPath(); c.moveTo(x,360); c.lineTo(x-70,760); c.stroke(); }
+
+  SEATS.forEach((seat,i)=>{
+    const p=seatPos(seat);
+    const bob=Math.sin(t*.9+i*.7)*2.0;
+    c.save(); c.translate(p.x,p.y+bob);
+    c.fillStyle='rgba(12,13,28,.78)'; roundRect(c,-70,-36,140,58,7); c.fill();
+    c.strokeStyle='rgba(201,169,106,.10)'; c.lineWidth=1; c.stroke();
+    drawPaperCard(c,0,-8,82,100,seat.n,'?',{rot:Math.sin(i*2.1)*.05,shadow:12});
+    c.restore();
+  });
+
+  /* 教室铭牌 */
+  c.fillStyle='rgba(201,169,106,.72)'; c.font="500 16px 'Noto Sans SC'"; c.textAlign='center'; c.textBaseline='top';
+  c.fillText('一间教室 · A CLASSROOM',960,158);
+  c.fillStyle='rgba(138,138,160,.6)'; c.font="500 12px 'Noto Sans SC'";
+  c.fillText('23 个座位 · 23 个日期',960,183);
+  c.restore();
+}
+
+function drawHookWall(c,t,extraA=1){
+  c.save(); c.globalAlpha*=extraA;
+  const layout={x:470,y:150,cw:42,ch:36,gx:5,gy:5,alpha:1};
+  const lit=new Set(DAYS), gold=new Set([194,222]);
+  drawWall(c,t,{...layout,litDays:lit,goldDays:gold});
+
+  /* 23 张纸卡：3.0s 起从座位飞进格子 */
+  SEATS.forEach((seat,i)=>{
+    const start=3.0+i*.035, dur=.78;
+    const p=easeInOut(clamp((t-start)/dur,0,1));
+    if(p<=0){
+      const q=seatPos(seat);
+      drawPaperCard(c,q.x,q.y-8,82,100,seat.n,DAYS[i],{rot:Math.sin(i*2.1)*.05,shadow:12});
+      return;
+    }
+    const day=DAYS[i], cell=wallCell(layout,day);
+    const tx=cell.x+cell.cw/2, ty=cell.y+cell.ch/2;
+    const qx=seatPos(seat).x, qy=seatPos(seat).y-8;
+    const x=lerp(qx,tx,p), y=lerp(qy,ty,p)-Math.sin(Math.PI*p)*175;
+    const rot=lerp(Math.sin(i*2.1)*.10,0,p);
+    const scl=lerp(.90,.34,p);
+    const ga=c.globalAlpha;
+    if(p<1) c.globalAlpha = ga*clamp(1-.15*p,0,1);
+    drawPaperCard(c,x,y,82*scl,100*scl,seat.n,day,{rot,shadow:8,gold:gold.has(day)});
+    c.globalAlpha=ga;
+  });
+
+  /* 落地后两处碰撞的连线 */
+  if(t>4.5){
+    const a=clamp((t-4.5)/1.0,0,1);
+    const c1=wallCell(layout,194), c2=wallCell(layout,222);
+    [[c1,1],[c2,2]].forEach(([cell,idx])=>{
+      const cx=cell.x+cell.cw/2, cy=cell.y+cell.ch/2;
+      drawCollisionGlow(c,cx,cy,t,1,a);
+      c.save(); c.globalAlpha*=a; c.strokeStyle=rgba('#C9A96A',.7); c.lineWidth=1.4;
+      c.beginPath(); c.moveTo(cx-12,cy); c.lineTo(cx+12,cy); c.stroke(); c.restore();
+    });
+    c.save(); c.globalAlpha*=a; c.font="500 15px 'Noto Sans SC'"; c.fillStyle=rgba('#C9A96A',.85);
+    c.textAlign='center'; c.textBaseline='top';
+    c.fillText('两天相撞',960,698); c.restore();
+  }
+  c.restore();
+}
+
+function drawComparison(c,t){
+  const a=clamp((t-8.0)/.7,0,1) * (1-clamp((t-12.6)/.4,0,1));
+  if(a<=0) return;
+  c.save(); c.globalAlpha*=a;
+  drawWall(c,t,{x:90,y:206,cw:31,ch:27,gx:4,gy:4,litDays:new Set(DAYS),goldDays:new Set([194,222])});
+
+  const rightX=1190, top=252, gap=118, rowGap=86;
+  SEATS.forEach((s,i)=>{
+    const col=i%5, row=Math.floor(i/5);
+    const x=rightX+col*gap, y=top+row*rowGap;
+    drawPaperCard(c,x,y,72,86,i+1,DAYS[i],{rot:Math.sin(i*3.2)*.06,shadow:10});
+  });
+  c.fillStyle='rgba(138,138,160,.62)'; c.font="500 14px 'Noto Sans SC'"; c.textAlign='center'; c.textBaseline='top';
+  c.fillText('23 张纸卡',1490,690);
+
+  /* 中间的 23 / 365 */
+  c.textAlign='center'; c.textBaseline='middle';
+  c.fillStyle=CFG.ink; c.font="900 52px 'Noto Serif SC'"; c.fillText('23',1014,365);
+  c.strokeStyle=rgba('#C9A96A',.55); c.lineWidth=1.2;
+  c.beginPath(); c.moveTo(968,397); c.lineTo(1060,397); c.stroke();
+  c.fillStyle='rgba(127,166,200,.9)'; c.font="900 52px 'Noto Serif SC'"; c.fillText('365',1014,435);
+  c.fillStyle='rgba(138,138,160,.65)'; c.font="500 13px 'Noto Sans SC'"; c.fillText('23 次抽奖？',1014,490);
+
+  /* 金色结论印章 */
+  if(t>=10.5){
+    const p=easeOut(clamp((t-10.5)/.55,0,1));
+    drawSeal(c,1015,594,'> 50%',{scale:.72+p*.30,rot:-.06,alpha:clamp((t-10.5)/.5,0,1),size:64});
+  }
+  c.restore();
+}
+
+/* ================= 20–40s 文献复原：1939 伊斯坦布尔 ================= */
+function drawPaperMiniWall(c,t,x,y,cw,ch,gx,gy){
+  const litN=t>26?Math.min(23,Math.floor((t-26)/.11)+1):0;
+  for(let day=1;day<=375;day++){
+    const col=(day-1)%25, row=Math.floor((day-1)/25);
+    const px=x+col*(cw+gx), py=y+row*(ch+gy);
+    const valid=day<=365;
+    const idx=DAYS.indexOf(day);
+    const lit=idx>=0 && idx<litN;
+    const gold=lit && (day===194||day===222);
+    roundRect(c,px,py,cw,ch,1.2);
+    if(!valid){ c.fillStyle='rgba(74,58,39,.025)'; c.fill(); }
+    else if(gold){
+      c.fillStyle='rgba(137,92,32,.52)'; c.fill(); c.strokeStyle='rgba(137,92,32,.82)'; c.lineWidth=1; c.stroke();
+    } else if(lit){
+      c.fillStyle='rgba(39,78,110,.34)'; c.fill(); c.strokeStyle='rgba(39,78,110,.58)'; c.lineWidth=.8; c.stroke();
+    } else {
+      c.fillStyle='rgba(74,58,39,.075)'; c.fill(); c.strokeStyle='rgba(74,58,39,.16)'; c.lineWidth=.6; c.stroke();
+    }
+  }
+  if(litN>0){
+    DAYS.slice(0,litN).forEach((day)=>{
+      const col=(day-1)%25, row=Math.floor((day-1)/25);
+      const px=x+col*(cw+gx)+cw/2, py=y+row*(ch+gy)+ch/2;
+      c.fillStyle=(day===194||day===222)?'#C9A96A':'rgba(32,66,96,.92)';
+      c.beginPath(); c.arc(px,py,1.9,0,Math.PI*2); c.fill();
+    });
+  }
+}
+
+function drawLiteraturePage(c,t,alpha=1,scale=1,yOff=0){
+  if(alpha<=0) return;
+  const w=960,h=520;
+  c.save(); c.globalAlpha*=alpha; c.translate(870,492+yOff); c.scale(scale,scale); c.rotate(-.008);
+  c.shadowColor='rgba(0,0,0,.55)'; c.shadowBlur=36; c.shadowOffsetY=14;
+  c.fillStyle='#E8DDC7'; roundRect(c,-w/2,-h/2,w,h,4); c.fill(); c.shadowColor='transparent';
+  paperTexture(c,w,h,.9);
+  c.strokeStyle='rgba(74,58,39,.18)'; c.lineWidth=1; roundRect(c,-w/2+10,-h/2+10,w-20,h-20,3); c.stroke();
+
+  /* 页眉 */
+  const head=clamp((t-20)/.8,0,1);
+  c.save(); c.globalAlpha*=head;
+  c.fillStyle='rgba(74,58,39,.58)'; c.textAlign='left'; c.textBaseline='top';
+  c.font="500 12px 'EB Garamond', serif"; c.fillText('REVUE DE LA FACULTÉ DES SCIENCES DE L’UNIVERSITÉ D’ISTANBUL',-w/2+44,-h/2+35);
+  c.strokeStyle='rgba(74,58,39,.22)'; c.beginPath(); c.moveTo(-w/2+44,-h/2+58); c.lineTo(w/2-44,-h/2+58); c.stroke();
+  c.restore();
+
+  /* 德文原题：逐行显影 */
+  const titleA=clamp((t-23)/.8,0,1);
+  c.save(); c.globalAlpha*=titleA;
+  c.fillStyle='#3A2E20'; c.textAlign='left'; c.textBaseline='top';
+  c.font="900 30px 'EB Garamond', serif";
+  c.fillText('Über Aufteilungs- und',-w/2+52,-h/2+94);
+  c.fillText('Besetzungs-',-w/2+52,-h/2+132);
+  c.fillText('Wahrscheinlichkeiten',-w/2+52,-h/2+170);
+  c.fillStyle='rgba(58,46,32,.62)'; c.font="italic 400 15px 'EB Garamond', serif";
+  c.fillText('On distribution and occupancy probabilities',-w/2+54,-h/2+214);
+  c.strokeStyle='rgba(181,58,47,.55)'; c.lineWidth=2;
+  c.beginPath(); c.moveTo(-w/2+52,-h/2+242); c.lineTo(-w/2+330,-h/2+242); c.stroke();
+  c.fillStyle='#3A2E20'; c.font="600 19px 'EB Garamond', serif";
+  c.fillText('R. von Mises',-w/2+54,-h/2+258);
+  c.fillStyle='rgba(74,58,39,.52)'; c.font="400 13px 'EB Garamond', serif";
+  c.fillText('Istanbul, 1939',-w/2+54,-h/2+284);
+  c.restore();
+
+  /* 右侧迷你 365 格阵：米白纸上用深墨色，不参加辉光 */
+  const miniA=clamp((t-24.5)/.9,0,1);
+  c.save(); c.globalAlpha*=miniA;
+  drawPaperMiniWall(c,t,w/2-350,-h/2+96,10,9,1.5,1.5);
+  c.fillStyle='rgba(74,58,39,.62)'; c.font="500 11px 'Noto Sans SC'"; c.textAlign='center'; c.textBaseline='top';
+  c.fillText('23 人 · 365 格 · 图为示意',w/2-207,-h/2+270);
+  c.restore();
+
+  /* 页脚文献出处 */
+  const citeA=clamp((t-32)/.8,0,1);
+  c.save(); c.globalAlpha*=citeA;
+  c.strokeStyle=rgba('#C9A96A',.65); c.lineWidth=1.4;
+  c.beginPath(); c.moveTo(-w/2+52,h/2-84); c.lineTo(w/2-52,h/2-84); c.stroke();
+  c.fillStyle='#3A2E20'; c.font="600 15px 'Noto Sans SC'"; c.textAlign='left'; c.textBaseline='top';
+  c.fillText('Revue de la Faculté des Sciences de l’Université d’Istanbul',-w/2+52,h/2-70);
+  c.fillStyle='rgba(74,58,39,.58)'; c.font="italic 400 13px 'EB Garamond', serif";
+  c.fillText('N.S. 4, 145–163 (1939)',-w/2+52,h/2-48);
+  c.restore();
+
+  /* 50.7% 金印 */
+  if(t>=29){
+    const p=easeOut(clamp((t-29)/.5,0,1));
+    drawSeal(c,w/2-160,h/2-160,'50.7%',{scale:.78+p*.22,rot:-.10,size:56,alpha:clamp((t-29)/.45,0,1)});
+  }
+  /* 命名红印 */
+  if(t>=35){
+    const p=easeOut(clamp((t-35)/.5,0,1));
+    drawSeal(c,-w/2+180,h/2-160,'生日问题',{scale:1.02-p*.14,rot:.06,size:36,color:CFG.red,alpha:clamp((t-35)/.45,0,1)});
+  }
+  c.restore();
+}
+
+function drawLiterature(c,t){
+  if(t<20 || t>=40) return;
+  if(t<37){
+    const rise=easeOut(clamp((t-20)/.9,0,1));
+    drawLiteraturePage(c,t,rise,1,lerp(120,0,rise));
+  } else {
+    const k=easeInOut(clamp((t-37)/2.6,0,1));
+    drawLiteraturePage(c,t,1-k,lerp(1,.92,k),lerp(0,-30,k));
+    /* 迷你格阵推近成整屏 */
+    const L={
+      x:lerp(1000,470,k), y:lerp(328,150,k),
+      cw:lerp(10,42,k), ch:lerp(9,36,k),
+      gx:lerp(1.5,5,k), gy:lerp(1.5,5,k)
+    };
+    drawWall(c,t,{...L,alpha:clamp((t-37)/.8,0,1),litDays:new Set(DAYS),goldDays:new Set([194,222])});
+  }
+}
+
+
+/* ================= 40–63.5s 规则卡 + 第一次实验 ================= */
+const LAY_W={x:430,y:142,cw:40,ch:34,gx:5,gy:5};
+
+function dayOccurrence(day,index){
+  let occ=0;
+  for(let k=0;k<index;k++) if(DAYS[k]===day) occ++;
+  return occ;
+}
+
+function drawRuleStage(c,t){
+  if(t<40 || t>=47.5) return;
+  const a=clamp((t-40)/.5,0,1);
+  drawWall(c,t,{...LAY_W,alpha:.82,litDays:t>45?new Set([194]):null,goldDays:t>46?new Set([194]):null});
+  drawRuleCard(c,t,232,448,306,352);
+  c.save(); c.globalAlpha=a;
+
+  /* 墙顶 23 张纸卡排成一行（45s 起让前两张先落下） */
+  SEATS.forEach((s,i)=>{
+    if(t>=45 && i<2) return;
+    const x=sideQueueX(i,23);
+    drawPaperCard(c,x,112,31,40,i+1,'?',{rot:Math.sin(i*1.7)*.05,shadow:7});
+  });
+  c.restore();
+
+  /* 45s 起，两张卡落进同一格 */
+  if(t>=45){
+    const p=easeInOut(clamp((t-45)/1.25,0,1));
+    const cell=wallCell(LAY_W,194);
+    const tx=cell.x+cell.cw/2, ty=cell.y+cell.ch/2;
+    for(let k=0;k<2;k++){
+      const sx=sideQueueX(1+k,23), sy=112;
+      drawPaperCard(c,lerp(sx,tx+(k?5:-5),p),lerp(sy,ty,p)+Math.sin(Math.PI*p)*55,30,38,2+k,194,{rot:lerp(-.08,.02,p),gold:p>.92,shadow:6});
+    }
+    drawCollisionGlow(c,tx,ty,t,.84,p);
+  }
+}
+
+function sideQueueX(i,n){
+  const gap=42, x0=960-(n-1)*gap/2;
+  return x0+i*gap;
+}
+
+function drawFirstTrial(c,t){
+  if(t<47.5 || t>=63.5) return;
+  const zoomState=focusZoom(t);
+  const drawLanded = ()=> {
+    const landed=DAYS.filter((d,i)=>t >= 50.05+i*.16+.48);
+    const lit=new Set(landed);
+    const gold=new Set([194,222].filter(d=>landed.filter(x=>x===d).length>=2));
+    drawWall(c,t,{...LAY_W,alpha:1,litDays:lit,goldDays:gold});
+
+    /* 落格进度 */
+    SEATS.forEach((s,i)=>{
+      const start=50.05+i*.16, dur=.48;
+      const p=easeInOut(clamp((t-start)/dur,0,1));
+      const day=DAYS[i], cell=wallCell(LAY_W,day);
+      const occ=dayOccurrence(day,i);
+      const off=(occ?9:-9);
+      const queueX=sideQueueX(i,23), queueY=108;
+      const slotX=cell.x+cell.cw/2+off;
+      const slotY=cell.y+cell.ch/2;
+      if(p<=0){
+        drawPaperCard(c,queueX,queueY,31,40,i+1,'?',{rot:Math.sin(i*1.7)*.05,shadow:7});
+        return;
+      }
+      const x=lerp(queueX,slotX,p), y=lerp(queueY,slotY,p)-Math.sin(Math.PI*p)*90;
+      const scl=lerp(.78,.50,p);
+      drawPaperCard(c,x,y,62*scl,78*scl,i+1,day,{rot:lerp(Math.sin(i*2.0)*.10,0,p),gold:(day===194||day===222)&&p>.94,shadow:6});
+    });
+    if(t>55.2){
+      [194,222].forEach(day=>{
+        const cell=wallCell(LAY_W,day);
+        drawCollisionGlow(c,cell.x+cell.cw/2,cell.y+cell.ch/2,t,.85,clamp((t-55.2)/.5,0,1));
+      });
+    }
+  };
+
+  if(zoomState.z>1.001){
+    const {z, fx, fy}=zoomState;
+    c.save();
+    c.translate(960,436); c.scale(z,z); c.translate(-fx,-fy);
+    drawLanded();
+    c.restore();
+  } else drawLanded();
+
+  /* 计数器（不随镜头缩放） */
+  const landedN=DAYS.filter((d,i)=>t>=50.05+i*.16+.48).length;
+  const hits=[194,222].filter(d=>DAYS.filter((x,i)=>x===d && t>=50.05+i*.16+.48).length>=2).length;
+  c.save();
+  drawPanel(c,1600,158,258,176,{alpha:clamp((t-47.5)/.5,0,1),stroke:'rgba(201,169,106,.22)'});
+  c.globalAlpha=clamp((t-47.5)/.5,0,1);
+  c.textAlign='left'; c.textBaseline='top';
+  c.fillStyle='rgba(138,138,160,.8)'; c.font="500 14px 'Noto Sans SC'";
+  c.fillText('第 1 次实验 · 模拟',1622,180);
+  c.fillStyle=CFG.ink; c.font="900 54px 'Noto Serif SC'";
+  c.fillText(landedN+' / 23',1620,205);
+  c.fillStyle='rgba(138,138,160,.65)'; c.font="500 13px 'Noto Sans SC'";
+  c.fillText('已落格',1622,270);
+  c.fillStyle=hits===2?CFG.accent:'rgba(138,138,160,.4)'; c.font="700 21px 'Noto Sans SC'";
+  c.fillText('碰撞 '+hits,1622,294);
+  if(hits===2) goldGlow(c,1784,305,40,.13,'#C9A96A');
+  c.restore();
+
+  /* 细节标签 */
+  if(t>=56.0 && t<58.5) drawDayLabel(c,'DAY 194','第 2 人 × 第 8 人',194,t);
+  if(t>=58.5 && t<61.0) drawDayLabel(c,'DAY 222','第 3 人 × 第 9 人',222,t);
+  if(t>54.6 && t<56.0){
+    c.save(); c.globalAlpha=clamp((t-54.6)/.4,0,1);
+    c.fillStyle=rgba('#C9A96A',.8); c.font="700 15px 'Noto Sans SC'"; c.textAlign='center';
+    c.fillText('1 次实验 · 2 处碰撞',960,708); c.restore();
+  }
+}
+
+function drawDayLabel(c,big,small,day,t){
+  const a=clamp((t-56.0)/.4,0,1)*(1-clamp((t-58.5)/.4,0,1)) + clamp((t-58.5)/.4,0,1)*(1-clamp((t-61.0)/.4,0,1));
+  if(a<=0) return;
+  c.save(); c.globalAlpha=a;
+  c.fillStyle=rgba('#C9A96A',.95); c.font="900 30px 'Noto Serif SC'"; c.textAlign='center'; c.textBaseline='middle';
+  c.fillText(big,960,695);
+  c.fillStyle='rgba(138,138,160,.9)'; c.font="500 15px 'Noto Sans SC'";
+  c.fillText(small,960,730);
+  c.restore();
+}
+
+function focusZoom(t){
+  let z=1;
+  let from=194, to=194;
+  if(t>=55.3 && t<56.3) z=lerp(1,2.65,easeInOut((t-55.3)/1.0));
+  else if(t>=56.3 && t<58.4) z=2.65;
+  else if(t>=58.4 && t<59.3){
+    z=2.65; from=194; to=222;
+    const k=easeInOut((t-58.4)/.9);
+    return {z,fx:lerp(focusFor(194).x,focusFor(222).x,k),fy:lerp(focusFor(194).y,focusFor(222).y,k)};
+  } else if(t>=59.3 && t<60.5) z=2.65;
+  else if(t>=60.5 && t<61.8) z=lerp(2.65,1,easeInOut((t-60.5)/1.3));
+  if(t>=58.4) from=222;
+  const f=focusFor(from);
+  return {z,fx:f.x,fy:f.y};
+}
+function focusFor(day){
+  const cell=wallCell(LAY_W,day);
+  return {x:cell.x+cell.cw/2, y:cell.y+cell.ch/2};
+}
+
+/* ================= 63.5–72s 一千间房 ================= */
+const GRID={x:442,y:146,cw:20,ch:15,gx:4,gy:4};
+
+function drawThousand(c,t){
+  if(t<63.5 || t>=73.0) return;
+  const shrink=easeInOut(clamp((t-63.5)/2.6,0,1));
+  const gridA=clamp((t-64.2)/2.2,0,1)*(1-clamp((t-72.2)/.75,0,1));
+  if(shrink>0){
+    const L={
+      x:lerp(LAY_W.x,202,shrink), y:lerp(LAY_W.y,170,shrink),
+      cw:lerp(LAY_W.cw,7.4,shrink), ch:lerp(LAY_W.ch,6.2,shrink),
+      gx:lerp(LAY_W.gx,1,shrink), gy:lerp(LAY_W.gy,1,shrink)
+    };
+    drawWall(c,t,{...L,alpha:1-shrink*.05,litDays:new Set(DAYS),goldDays:new Set([194,222])});
+    if(t>65){
+      c.save(); c.globalAlpha=clamp((t-65)/.5,0,1);
+      c.fillStyle=rgba('#C9A96A',.7); c.font="500 12px 'Noto Sans SC'"; c.textAlign='center';
+      c.fillText('第 1 间房',246,336); c.restore();
+    }
+  }
+  if(gridA<=0) return;
+  const upto=t<67?0:Math.floor(clamp((t-67)/2.4,0,1)*1000);
+  drawRoomGrid(c,t,{...GRID,alpha:gridA,upto});
+  const hits=hitCountAt(upto);
+  c.save(); c.globalAlpha=gridA;
+  c.textAlign='left'; c.textBaseline='top';
+  c.fillStyle='rgba(138,138,160,.8)'; c.font="500 14px 'Noto Sans SC'";
+  c.fillText('1000 次重复 · 每间房 23 人 · 模拟',444,104);
+  drawPanel(c,1454,150,352,230,{stroke:'rgba(201,169,106,.20)'});
+  c.fillStyle=CFG.ink; c.font="900 64px 'Noto Serif SC'";
+  c.fillText(upto.toLocaleString('en-US'),1476,188);
+  c.fillStyle='rgba(138,138,160,.86)'; c.font="500 22px 'Noto Sans SC'";
+  c.fillText('/ 1000 间房',1478,262);
+  c.fillStyle='rgba(138,138,160,.6)'; c.font="500 13px 'Noto Sans SC'";
+  c.fillText('出现同一天',1478,300);
+  c.fillStyle=CFG.accent; c.font="900 46px 'Noto Serif SC'";
+  c.fillText(hits,1478,324);
+  goldGlow(c,1528,342,72,.10*gridA,'#C9A96A');
+  c.restore();
+
+  if(t>=69.5){
+    const a=clamp((t-69.5)/.5,0,1)*(1-clamp((t-71.4)/1.0,0,1));
+    if(a<=0) return;
+    c.save(); c.globalAlpha=a;
+    c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle=CFG.accent; c.font="900 86px 'Noto Serif SC'";
+    c.fillText('510 / 1000',960,705);
+    c.fillStyle='rgba(138,138,160,.8)'; c.font="500 15px 'Noto Sans SC'";
+    c.fillText('模拟 51.0%　·　理论 50.7%　·　模拟数据',960,748);
+    c.restore();
+  }
+}
+
+/* ================= 72–82s 同一问题，六个数 ================= */
+function drawPeopleRoom(c,x,y,w,h,count,t,opt={}){
+  drawPanel(c,x,y,w,h,{fill:'rgba(9,9,24,.62)',stroke:'rgba(127,166,200,.22)'});
+  c.save();
+  c.textAlign='left'; c.textBaseline='top';
+  c.fillStyle=rgba('#C9A96A',.8); c.font="500 13px 'Noto Sans SC'";
+  c.fillText(opt.label||'小房间',x+22,y+18);
+  c.fillStyle='rgba(138,138,160,.7)'; c.font="500 11px 'Noto Sans SC'";
+  c.fillText(opt.en||'ONE ROOM',x+22,y+38);
+
+  const cols=6, cw=82, chh=86, gx=14, gy=10;
+  const x0=x+w/2-(cols*cw+(cols-1)*gx)/2;
+  const y0=y+66;
+  for(let i=0;i<30;i++){
+    if(i>=count) break;
+    const col=i%cols, row=Math.floor(i/cols);
+    const cx=x0+cw/2+col*(cw+gx), cy=y0+chh/2+row*(chh+gy);
+    const pair=(i===0||i===1);
+    drawPaperCard(c,cx+(pair?(i?9:-9):0),cy,50,58,i+1, (pair?194:DAYS[i%23]), {rot:Math.sin(i*2.4)*.06,shadow:6,gold:pair});
+  }
+  if(count>0) drawCollisionGlow(c,x0+cw/2,y0+chh/2,t,.75,1);
+
+  c.textAlign='right'; c.textBaseline='top';
+  c.fillStyle=CFG.ink; c.font="900 34px 'Noto Serif SC'";
+  c.fillText(count+' 人',x+w-22,y+16);
+  c.restore();
+}
+
+function drawSixNumbers(c,t){
+  if(t<72 || t>=84) return;
+  const a=clamp((t-72)/.5,0,1)*(1-clamp((t-82.3)/1.2,0,1));
+  if(a<=0) return;
+  let count=23, target=50.7, color=CFG.accent, label='23 人';
+  if(t>=74.5 && t<77){ count=22; target=47.6; color=CFG.red; label='22 人'; }
+  else if(t>=79.5){ count=30; target=70.6; color=CFG.accent; label='30 人'; }
+  else if(t>=77) { count=23; target=50.7; color=CFG.accent; label='23 人'; }
+  if(t>=72 && t<74.5) target=lerp(51.0,50.7,clamp((t-72)/.8,0,1));
+
+  c.save(); c.globalAlpha*=a;
+  drawPeopleRoom(c,190,200,690,450,count,t,{label:label+' · 同一间房',en:'ONE ROOM · 23 PEOPLE'});
+  drawGauge(c,1500,188,320,500,target,{compact:false,sub:label+' 的答案',color});
+  c.restore();
+
+  /* 22 → 23 跨线时闪一下 */
+  if(t>=77.1 && t<79.1){
+    const k=Math.abs(Math.sin((t-77.1)*2.3));
+    goldGlow(c,960,235,250,.05*k,'#C9A96A');
+  }
+}
+
+/* ================= 82–90s 理论曲线 ================= */
+const PROBS = (()=>{ const a=[0]; let p=1; for(let n=1;n<=100;n++){ p*= (366-n)/365; a.push(1-p);} return a; })();
+function prob(n){ return PROBS[clamp(n,0,100)]; }
+
+const CURVE={x0:260,y0:652,x1:1450,ytop:170};
+function curveX(n){ return CURVE.x0 + n/100*(CURVE.x1-CURVE.x0); }
+function curveY(p){ return CURVE.y0 - p* (CURVE.y0-CURVE.ytop); }
+
+function drawCurveChart(c,t){
+  if(t<82 || t>=90.5) return;
+  const a=clamp((t-82)/.6,0,1)*(1-clamp((t-89.6)/.9,0,1));
+  if(a<=0) return;
+  const nEnd=lerp(0,70,easeInOut(clamp((t-82)/3.0,0,1)));
+  c.save(); c.globalAlpha*=a;
+
+  /* 坐标轴 */
+  c.strokeStyle='rgba(138,138,160,.28)'; c.lineWidth=1.2;
+  c.beginPath(); c.moveTo(CURVE.x0,CURVE.ytop-10); c.lineTo(CURVE.x0,CURVE.y0); c.lineTo(CURVE.x1,CURVE.y0); c.stroke();
+  c.fillStyle='rgba(138,138,160,.66)'; c.font="500 14px 'Noto Sans SC'"; c.textAlign='center'; c.textBaseline='top';
+  for(const n of [0,20,40,60,80,100]){
+    const x=curveX(n);
+    c.strokeStyle='rgba(138,138,160,.18)'; c.beginPath(); c.moveTo(x,CURVE.y0); c.lineTo(x,CURVE.y0+6); c.stroke();
+    c.fillText(String(n),x,CURVE.y0+12);
+  }
+  c.textAlign='right'; c.textBaseline='middle';
+  for(const p of [0,25,50,75,100]){
+    const y=curveY(p/100);
+    c.fillStyle='rgba(138,138,160,.62)'; c.fillText(p+'%',CURVE.x0-18,y);
+    c.strokeStyle='rgba(138,138,160,.14)'; c.beginPath(); c.moveTo(CURVE.x0-10,y); c.lineTo(CURVE.x0,y); c.stroke();
+  }
+  c.textAlign='left'; c.textBaseline='top';
+  c.fillStyle='rgba(138,138,160,.70)'; c.font="500 13px 'Noto Sans SC'";
+  c.fillText('房间人数',CURVE.x0,CURVE.y0+38);
+  c.save(); c.translate(CURVE.x0-88,curveY(.5)); c.rotate(-Math.PI/2);
+  c.fillText('至少一对同一天',0,0); c.restore();
+
+  /* 50% 金线 */
+  const y50=curveY(.5072972343239857);
+  c.strokeStyle=rgba('#C9A96A',.55); c.lineWidth=1.2; c.setLineDash([6,5]);
+  c.beginPath(); c.moveTo(CURVE.x0+4,y50); c.lineTo(CURVE.x1,y50); c.stroke(); c.setLineDash([]);
+  c.fillStyle=rgba('#C9A96A',.72); c.font="500 13px 'Noto Sans SC'"; c.textAlign='left';
+  c.fillText('50.7%',CURVE.x0+8,y50-19);
+
+  /* 曲线下方的淡金渐变 */
+  const pts=[];
+  for(let i=0;i<=Math.max(2,Math.floor(nEnd));i++){
+    const n=i, p=prob(n);
+    pts.push([curveX(n),curveY(p)]);
+  }
+  if(nEnd>0){
+    c.beginPath(); c.moveTo(curveX(0),curveY(0));
+    for(const [x,y] of pts) c.lineTo(x,y);
+    c.lineTo(curveX(nEnd),CURVE.y0); c.closePath();
+    const g=c.createLinearGradient(0,CURVE.ytop,0,CURVE.y0);
+    g.addColorStop(0,'rgba(201,169,106,.02)'); g.addColorStop(1,'rgba(201,169,106,.10)');
+    c.fillStyle=g; c.fill();
+
+    c.save(); c.shadowColor=rgba('#C9A96A',.55); c.shadowBlur=18;
+    c.strokeStyle=rgba('#E7CFA0',.94); c.lineWidth=2.4; c.beginPath();
+    c.moveTo(pts[0][0],pts[0][1]);
+    for(const [x,y] of pts) c.lineTo(x,y);
+    c.stroke(); c.restore();
+    const last=pts[pts.length-1];
+    goldGlow(c,last[0],last[1],26,.2,'#C9A96A');
+    c.fillStyle=CFG.accent; c.beginPath(); c.arc(last[0],last[1],5,0,Math.PI*2); c.fill();
+  }
+
+  /* 关键点 */
+  const marks=[
+    {n:23,p:prob(23),label:'23 人'},
+    {n:30,p:prob(30),label:'30 人'},
+    {n:70,p:prob(70),label:'70 人'},
+  ];
+  marks.forEach(m=>{
+    if(nEnd<m.n-1) return;
+    if(m.n===70 && t>=85) return;
+    const x=curveX(m.n), y=curveY(m.p);
+    const is70=m.n===70;
+    c.fillStyle=is70?CFG.accent:rgba('#7FA6C8',.9);
+    c.beginPath(); c.arc(x,y,is70?6:4,0,Math.PI*2); c.fill();
+    c.fillStyle=is70?rgba('#C9A96A',.84):'rgba(138,138,160,.62)';
+    c.font=`${is70?700:500} ${is70?17:12}px 'Noto Sans SC'`; c.textAlign='left'; c.textBaseline='bottom';
+    c.fillText(m.label+' · '+(m.p*100).toFixed(1)+'%',x+9,y-8);
+  });
+
+  if(t>=85){
+    const a70=clamp((t-85)/.5,0,1);
+    const x=curveX(70), y=curveY(prob(70));
+    c.save(); c.globalAlpha*=a70;
+    c.strokeStyle=rgba('#C9A96A',.45); c.lineWidth=1.1; c.setLineDash([5,5]);
+    c.beginPath(); c.moveTo(x,y); c.lineTo(x,CURVE.y0); c.stroke(); c.setLineDash([]);
+    c.textAlign='right'; c.textBaseline='middle';
+    c.fillStyle=CFG.accent; c.font="900 42px 'Noto Serif SC'";
+    c.fillText('99.9%',x-14,y-26);
+    c.fillStyle='rgba(138,138,160,.8)'; c.font="500 13px 'Noto Sans SC'";
+    c.fillText('70 人 · 理论曲线',x-14,y-64);
+    c.restore();
+  }
+
+  if(t>=87.4){
+    const k=.65+.35*Math.abs(Math.sin((t-87.4)*1.5));
+    c.save(); c.globalAlpha*=.75*k;
+    c.fillStyle=CFG.accent; c.font="900 78px 'Noto Serif SC'"; c.textAlign='center'; c.textBaseline='middle';
+    c.fillText('?',curveX(35),curveY(.88)); c.restore();
+  }
+  c.fillStyle='rgba(138,138,160,.52)'; c.font="500 12px 'Noto Sans SC'"; c.textAlign='right'; c.textBaseline='top';
+  c.fillText('理论曲线 · 公式计算',CURVE.x1,CURVE.y0+38);
+  c.restore();
+}
+
+
+/* ================= 90–100s 253 对：曲线点变形为 23 个人 ================= */
+function nodePos(i,cx,cy,r){
+  const a=-Math.PI/2 + i*Math.PI*2/23;
+  return {x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r};
+}
+
+function drawNodeGraph(c,t,cx,cy,r,opts={}){
+  const edgeCount=opts.edgeCount??253;
+  const edgeAlpha=opts.edgeAlpha??1;
+  const nodeAlpha=opts.nodeAlpha??1;
+  const youMode=opts.youMode||'none'; /* none | highlight | only */
+  const positions=opts.positions||PAIRS.map((_,i)=>nodePos(i,cx,cy,r));
+
+  c.save(); c.globalAlpha*=edgeAlpha;
+  for(let i=0;i<Math.min(edgeCount,PAIRS.length);i++){
+    const [a,b]=PAIRS[i];
+    const isYou=(a===YOU||b===YOU);
+    if(youMode==='only' && !isYou) continue;
+    const pa=nodePosPoint(a,opts), pb=nodePosPoint(b,opts);
+    let color, lw, alpha;
+    if(youMode==='highlight' && isYou){ color='#B53A2F'; lw=1.7; alpha=.78; }
+    else if(youMode==='only'){ color='#B53A2F'; lw=1.4; alpha=.82; }
+    else { color='#C9A96A'; lw=.75; alpha=.18; }
+    if(opts.pulse && !isYou) alpha=.14+.18*Math.abs(Math.sin(t*1.25+i*.13));
+    c.strokeStyle=rgba(color,alpha); c.lineWidth=lw;
+    c.beginPath(); c.moveTo(pa.x,pa.y); c.lineTo(pb.x,pb.y); c.stroke();
+  }
+  c.restore();
+
+  c.save(); c.globalAlpha*=nodeAlpha;
+  for(let i=0;i<23;i++){
+    const p=opts.positions?opts.positions[i]:nodePos(i,cx,cy,r);
+    const you=i===YOU;
+    const isGold=you && (youMode!=='none');
+    c.shadowColor=isGold?rgba('#C9A96A',.55):'transparent'; c.shadowBlur=isGold?16:0;
+    c.fillStyle=isGold?'#C9A96A':'#EDE4D3';
+    c.strokeStyle=isGold?rgba('#F1D9A8',.95):rgba('#7FA6C8',.55); c.lineWidth=1.4;
+    c.beginPath(); c.arc(p.x,p.y,you&&youMode!=='none'?9:6.5,0,Math.PI*2); c.fill(); c.stroke();
+    c.shadowColor='transparent';
+  }
+  if(opts.labelYou){
+    const p=opts.positions?opts.positions[YOU]:nodePos(YOU,cx,cy,r);
+    c.fillStyle=CFG.accent; c.font="900 18px 'Noto Serif SC'"; c.textAlign='center'; c.textBaseline='middle';
+    c.fillText('你',p.x,p.y-24);
+  }
+  c.restore();
+}
+
+function nodePosPoint(i,opts){
+  return opts.positions?opts.positions[i]:nodePos(i,opts.cx||850,opts.cy||380,opts.r||245);
+}
+
+function drawNodeStage(c,t){
+  if(t<89.8 || t>=100.3) return;
+  const fadeOut=1-clamp((t-99.7)/.6,0,1);
+  const cx=840, cy=385, r=246;
+
+  /* 90–92.5：曲线上的采样点飞成圆圈 */
+  const morph=easeInOut(clamp((t-90)/2.0,0,1));
+  const positions=Array.from({length:23},(_,i)=>{
+    const n=2+i*3;
+    const sx=curveX(n), sy=curveY(prob(n));
+    const tx=nodePos(i,cx,cy,r).x, ty=nodePos(i,cx,cy,r).y;
+    return {x:lerp(sx,tx,morph), y:lerp(sy,ty,morph)};
+  });
+  const edgeCount=t<91.2?0:(t>=94.85?253:Math.floor(clamp((t-91.2)/3.65,0,1)*253));
+  const youMode=t>=97.4?'highlight':'none';
+
+  c.save(); c.globalAlpha*=fadeOut;
+  drawNodeGraph(c,t,cx,cy,r,{positions,edgeCount,youMode,pulse:t>=95,labelYou:t>=97.4});
+  c.restore();
+
+  /* 253 计数 */
+  if(t>=91.2){
+    const a=clamp((t-91.2)/.5,0,1)*fadeOut;
+    c.save(); c.globalAlpha=a;
+    drawPanel(c,1470,184,338,220,{stroke:'rgba(201,169,106,.20)'});
+    c.textAlign='left'; c.textBaseline='top';
+    c.fillStyle='rgba(138,138,160,.8)'; c.font="500 13px 'Noto Sans SC'";
+    c.fillText('两两配对 · C(23,2)',1492,205);
+    c.fillStyle=CFG.accent; c.font="900 72px 'Noto Serif SC'";
+    c.fillText(String(edgeCount),1490,232);
+    c.fillStyle='rgba(138,138,160,.75)'; c.font="500 15px 'Noto Sans SC'";
+    c.fillText('对',1490+ (edgeCount>99?146:92),300);
+    c.fillStyle='rgba(138,138,160,.56)'; c.font="500 12px 'Noto Sans SC'";
+    c.fillText('23 个人 · 不是 23 次比较',1492,346);
+    c.restore();
+  }
+
+  if(t>=95 && t<97.5){
+    const a=clamp((t-95)/.4,0,1)*fadeOut;
+    c.save(); c.globalAlpha=a;
+    c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle='rgba(138,138,160,.75)'; c.font="500 14px 'Noto Sans SC'";
+    c.fillText('每对 1/365　·　253/365 ≈ 69.3%（粗略上界，忽略重叠）',960,720);
+    c.restore();
+    /* 边上只闪一次极小的 1/365 */
+    const pairsToShow=12;
+    for(let k=0;k<pairsToShow;k++){
+      const [a0,b0]=PAIRS[(k*21+7)%PAIRS.length];
+      if(a0===YOU||b0===YOU) continue;
+      const p=nodePos(a0,cx,cy,r), q=nodePos(b0,cx,cy,r);
+      const x=(p.x+q.x)/2, y=(p.y+q.y)/2;
+      const al=.22+.34*Math.abs(Math.sin(t*2.1+k*.9));
+      c.save(); c.globalAlpha=al*a; c.fillStyle=rgba('#C9A96A',.9); c.font="500 10px 'EB Garamond', serif";
+      c.textAlign='center'; c.textBaseline='middle'; c.fillText('1/365',x,y); c.restore();
+    }
+  }
+
+  if(t>=97.5){
+    const a=clamp((t-97.5)/.4,0,1)*fadeOut;
+    c.save(); c.globalAlpha=a;
+    c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle='rgba(181,58,47,.88)'; c.font="700 16px 'Noto Sans SC'";
+    c.fillText('你 · 22 条红边',600,724);
+    c.fillStyle='rgba(201,169,106,.82)'; c.font="500 15px 'Noto Sans SC'";
+    c.fillText('其余 231 条金边',1290,724);
+    c.restore();
+  }
+}
+
+/* ================= 100–110s 两个问题 + 253 = 22 + 231 ================= */
+function drawMiniNet(c,cx,cy,r,t,opt={}){
+  const alpha=opt.alpha??1;
+  c.save(); c.globalAlpha*=alpha;
+  const youEdges=PAIRS.filter(([a,b])=>a===YOU||b===YOU);
+  const edges=opt.onlyYou?youEdges:PAIRS;
+  const prog=opt.edgeProgress??1;
+  const nShow=Math.floor(edges.length*prog);
+  for(let i=0;i<nShow;i++){
+    const [a,b]=edges[i];
+    const isYou=(a===YOU||b===YOU);
+    const p=nodePos(a,cx,cy,r), q=nodePos(b,cx,cy,r);
+    const red=opt.onlyYou && isYou;
+    const color=red?'#B53A2F':'#C9A96A';
+    const lw=red?1.8:.68;
+    const goldA=(opt.goldAlpha??.20);
+    let al=red?.82:goldA;
+    if(opt.pulse) al=red?.82:(goldA*.72+.14*Math.abs(Math.sin(t*1.3+i*.1)));
+    c.strokeStyle=rgba(color,al); c.lineWidth=lw;
+    c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(q.x,q.y); c.stroke();
+  }
+  for(let i=0;i<23;i++){
+    const p=nodePos(i,cx,cy,r);
+    const isYou=i===YOU && opt.onlyYou;
+    c.fillStyle=isYou?'#B53A2F':'#EDE4D3';
+    c.strokeStyle=isYou?rgba('#F1D9A8',.9):rgba('#7FA6C8',.52); c.lineWidth=1.1;
+    c.beginPath(); c.arc(p.x,p.y,isYou?7:4.8,0,Math.PI*2); c.fill(); c.stroke();
+  }
+  if(opt.onlyYou){
+    const p=nodePos(YOU,cx,cy,r);
+    c.fillStyle='rgba(181,58,47,.9)'; c.font="900 14px 'Noto Serif SC'"; c.textAlign='center'; c.textBaseline='middle';
+    c.fillText('你',p.x,p.y-18);
+  }
+  c.restore();
+}
+
+function drawComparisonStage(c,t){
+  if(t<99.8 || t>=110.5) return;
+  const out=1-clamp((t-109.4)/.62,0,1);
+  const graphsA=out*(1-clamp((t-107.4)/.55,0,1));
+  const leftA=.92*((t>=102.5)?0.40:1);
+  const rightA=1;
+  c.save(); c.globalAlpha*=graphsA;
+
+  /* 左：和我同一天 / 22 条红边 */
+  c.save(); c.globalAlpha*=leftA;
+  c.textAlign='center'; c.textBaseline='middle';
+  c.fillStyle=t>=102.5?'rgba(138,138,160,.55)':'rgba(234,234,242,.92)';
+  c.font="700 27px 'Noto Sans SC'";
+  c.fillText('和我同一天',500,160);
+  c.fillStyle='rgba(138,138,160,.62)'; c.font="500 13px 'Noto Sans SC'";
+  c.fillText('SAME AS ME · 22 对',500,188);
+  drawMiniNet(c,500,380,162,t,{onlyYou:true,edgeProgress:1,alpha:1});
+  c.fillStyle='rgba(181,58,47,.9)'; c.font="900 48px 'Noto Serif SC'";
+  c.fillText('5.9%',500,602);
+  c.fillStyle='rgba(138,138,160,.72)'; c.font="500 14px 'Noto Sans SC'";
+  c.fillText('22 对 · 只算你自己',500,642);
+  c.restore();
+
+  /* 右：任意两个人 / 253 条金边 */
+  c.save(); c.globalAlpha*=rightA;
+  c.textAlign='center'; c.textBaseline='middle';
+  c.fillStyle=t>=102.5?CFG.ink:'rgba(234,234,242,.92)';
+  c.font="700 27px 'Noto Sans SC'";
+  c.fillText('任意两个人',1340,160);
+  c.fillStyle=t>=102.5?rgba('#C9A96A',.9):'rgba(138,138,160,.62)'; c.font="500 13px 'Noto Sans SC'";
+  c.fillText('ANY TWO · 253 对',1340,188);
+  drawMiniNet(c,1340,380,162,t,{onlyYou:false,edgeProgress:1,pulse:t>=102.5,alpha:1,goldAlpha:.24});
+  c.fillStyle=CFG.accent; c.font="900 48px 'Noto Serif SC'";
+  c.fillText('50.7%',1340,602);
+  c.fillStyle='rgba(138,138,160,.72)'; c.font="500 14px 'Noto Sans SC'";
+  c.fillText('253 对 · 题目问的是这个',1340,642);
+  c.restore();
+
+  c.restore();
+
+  /* 105–107.5：主语换了，答案从 5.9% 跨到 50.7% */
+  if(t>=105 && t<107.5){
+    const a=clamp((t-105)/.4,0,1);
+    c.save(); c.globalAlpha*=a*out;
+    c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle='rgba(138,138,160,.68)'; c.font="500 15px 'Noto Sans SC'";
+    c.fillText('同一间房，换一个主语',960,682);
+    c.fillStyle='rgba(181,58,47,.9)'; c.font="900 34px 'Noto Serif SC'";
+    c.fillText('5.9%',790,720);
+    c.fillStyle='rgba(138,138,160,.7)'; c.font="900 26px 'Noto Sans SC'";
+    c.fillText('→',960,720);
+    c.fillStyle=CFG.accent; c.font="900 34px 'Noto Serif SC'";
+    c.fillText('50.7%',1130,720);
+    c.restore();
+  }
+
+  /* 107.5–110：253 = 22 + 231 */
+  if(t>=107.5){
+    const a=clamp((t-107.5)/.55,0,1);
+    c.save(); c.globalAlpha*=a*out;
+    c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle=CFG.accent; c.font="900 76px 'Noto Serif SC'";
+    c.fillText('253',480,300);
+    c.fillStyle='rgba(138,138,160,.75)'; c.font="500 52px 'Noto Serif SC'";
+    c.fillText('=',620,300);
+    c.fillStyle=CFG.red; c.font="900 64px 'Noto Serif SC'";
+    c.fillText('22',735,300);
+    c.fillStyle='rgba(138,138,160,.75)'; c.font="500 52px 'Noto Serif SC'";
+    c.fillText('+',845,300);
+    c.fillStyle=CFG.accent; c.font="900 76px 'Noto Serif SC'";
+    c.fillText('231',990,300);
+    c.fillStyle='rgba(138,138,160,.75)'; c.font="500 16px 'Noto Sans SC'";
+    c.fillText('你数了 22 对，漏了 231 对',960,380);
+
+    /* 253 格长条：22 红 + 231 金 */
+    const x0=276,y0=470,w=1368,h=48;
+    roundRect(c,x0,y0,w,h,6); c.fillStyle='rgba(20,21,40,.8)'; c.fill(); c.strokeStyle='rgba(201,169,106,.18)'; c.stroke();
+    const redW=w*22/253;
+    roundRect(c,x0,y0,redW,h,4); c.fillStyle=rgba('#B53A2F',.85); c.fill();
+    roundRect(c,x0+redW+3,y0,w-redW-3,h,4); c.fillStyle=rgba('#C9A96A',.55); c.fill();
+    c.fillStyle='rgba(234,234,242,.8)'; c.font="500 13px 'Noto Sans SC'"; c.textAlign='left'; c.textBaseline='top';
+    c.fillText('22 红',x0+3,y0+h+13);
+    c.fillStyle='rgba(201,169,106,.8)'; c.textAlign='right';
+    c.fillText('231 金',x0+w,y0+h+13);
+    c.strokeStyle=rgba('#C9A96A',.5); c.lineWidth=1.1;
+    c.beginPath(); c.moveTo(x0+redW,y0-10); c.lineTo(x0+redW,y0+h+3); c.stroke();
+    c.fillStyle='rgba(234,234,242,.9)'; c.font="700 19px 'Noto Sans SC'"; c.textAlign='center'; c.textBaseline='top';
+    c.fillText('漏掉的是 231 对',960,y0+h+46);
+    c.restore();
+  }
+}
+
+/* ================= 110–120s 教室 · 群聊 · 婚礼 ================= */
+function drawThreeScenes(c,t){
+  if(t<110.0 || t>=120.2) return;
+  const cardA=clamp((t-110.0)/.6,0,1)*(1-clamp((t-117.2)/.7,0,1));
+  if(cardA>0){
+    const centers=[430,960,1490];
+    const labels=[['教室','CLASSROOM'],['群聊','GROUP CHAT'],['婚礼','A WEDDING']];
+    centers.forEach((cx,i)=>{
+      c.save(); c.globalAlpha*=cardA;
+      const y=238;
+      drawPanel(c,cx-188,y,376,360,{fill:'rgba(13,14,32,.88)',stroke:'rgba(201,169,106,.22)'});
+      c.textAlign='center'; c.textBaseline='top';
+      c.fillStyle=CFG.ink; c.font="700 23px 'Noto Sans SC'";
+      c.fillText(labels[i][0],cx,y+18);
+      c.fillStyle='rgba(138,138,160,.58)'; c.font="500 11px 'Noto Sans SC'";
+      c.fillText(labels[i][1],cx,y+47);
+      drawMiniNet(c,cx,y+178,95,t,{onlyYou:false,edgeProgress:clamp((t-112.5)/1.2,0,1),pulse:true,alpha:1,goldAlpha:.30});
+      c.fillStyle=CFG.accent; c.font="900 22px 'Noto Serif SC'";
+      c.fillText('50.7%',cx,y+308);
+      c.fillStyle='rgba(138,138,160,.62)'; c.font="500 11px 'Noto Sans SC'";
+      c.fillText('23 人 · 253 对',cx,y+336);
+      c.restore();
+    });
+  }
+
+  /* 117.5–120：三张卡合成一张群聊卡 */
+  if(t>=117.3){
+    const a=clamp((t-117.3)/.7,0,1);
+    c.save(); c.globalAlpha*=a;
+    drawPanel(c,530,150,860,520,{fill:'rgba(12,13,30,.94)',stroke:'rgba(201,169,106,.28)'});
+    c.textAlign='left'; c.textBaseline='middle';
+    c.fillStyle='rgba(234,234,242,.8)'; c.font="500 17px 'Noto Sans SC'";
+    c.fillText('相亲相爱一家人（23）',566,186);
+    c.fillStyle='rgba(138,138,160,.55)'; c.font="500 12px 'Noto Sans SC'";
+    c.fillText('GROUP CHAT · 23 MEMBERS',566,210);
+    c.strokeStyle='rgba(201,169,106,.16)'; c.lineWidth=1;
+    c.beginPath(); c.moveTo(530,232); c.lineTo(1390,232); c.stroke();
+
+    /* 气泡 */
+    const bubbles=[
+      [596,286,300,'有人今天生日吗？',''],
+      [920,338,340,'我也是 5 月 14 号。',''],
+      [610,402,470,'我们俩同一天生日！','gold'],
+    ];
+    bubbles.forEach(([bx,by,bw,txt,type],i)=>{
+      roundRect(c,bx,by,bw,64,14);
+      c.fillStyle=type==='gold'?rgba('#C9A96A',.16):'rgba(127,166,200,.08)';
+      c.fill(); c.strokeStyle=type==='gold'?rgba('#C9A96A',.72):'rgba(127,166,200,.22)'; c.lineWidth=1.2; c.stroke();
+      c.fillStyle=type==='gold'?CFG.accent:'rgba(234,234,242,.86)'; c.font="600 21px 'Noto Sans SC'";
+      c.fillText(txt,bx+24,by+33);
+      if(type==='gold'){
+        c.fillStyle='rgba(138,138,160,.55)'; c.font="500 12px 'Noto Sans SC'";
+        c.fillText('23 人里，任意两人的概率：50.7%',bx+24,by+84);
+      }
+    });
+    c.textAlign='center'; c.fillStyle='rgba(138,138,160,.55)'; c.font="500 13px 'Noto Sans SC'";
+    c.fillText('你上周也见过',960,622);
+    c.restore();
+  }
+}
+
+/* ================= 120–124.5s 末句：回到开场那面墙 ================= */
+function drawOutro(c,t){
+  if(t<120 || t>=124.5) return;
+  const a=clamp((t-120)/1.0,0,1);
+  c.save(); c.globalAlpha*=a*.22;
+  drawWall(c,t,{x:430,y:142,cw:40,ch:34,gx:5,gy:5,alpha:1,goldDays:new Set([194,222])});
+  c.restore();
+  const c1=wallCell({x:430,y:142,cw:40,ch:34,gx:5,gy:5},194);
+  const c2=wallCell({x:430,y:142,cw:40,ch:34,gx:5,gy:5},222);
+  drawCollisionGlow(c,c1.x+20,c1.y+17,t,1.2,.55*a);
+  drawCollisionGlow(c,c2.x+20,c2.y+17,t,1.2,.55*a);
+
+  if(t>=121.8){
+    const k=easeOut(clamp((t-121.8)/.8,0,1));
+    c.save(); c.globalAlpha*=clamp((t-121.8)/.6,0,1);
+    c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle=rgba('#C9A96A',.22); c.font="900 170px 'Noto Serif SC'";
+    c.fillText('同一天',960,395);
+    c.fillStyle=rgba('#C9A96A',.82); c.font="900 47px 'Noto Serif SC'";
+    c.fillText('《同一天》',960,570);
+    c.fillStyle='rgba(138,138,160,.72)'; c.font="italic 400 18px 'EB Garamond', serif";
+    c.fillText('The Day We Share',960,614);
+    c.restore();
+  }
+}
+
+
+/* ================= 场景总调度 ================= */
+function drawScene(t){
+  NOW=t;
+  ctScene.clearRect(0,0,1920,1080);
+
+  if(t<13.2){
+    if(t<3.9){
+      const a=1-clamp((t-3.0)/.65,0,1);
+      if(a>0) drawClassroom(ctScene,t,a);
+    }
+    if(t>=3.0 && t<8.7) drawHookWall(ctScene,t,1-clamp((t-7.9)/.8,0,1));
+    if(t>=8.0) drawComparison(ctScene,t);
+  }
+
+  if(t>=20 && t<40) drawLiterature(ctScene,t);
+  if(t>=40 && t<47.5) drawRuleStage(ctScene,t);
+  if(t>=47.5 && t<63.5) drawFirstTrial(ctScene,t);
+  if(t>=63.5 && t<73) drawThousand(ctScene,t);
+  if(t>=72 && t<84) drawSixNumbers(ctScene,t);
+  if(t>=82 && t<90.5) drawCurveChart(ctScene,t);
+  if(t>=89.8 && t<100.3) drawNodeStage(ctScene,t);
+  if(t>=99.8 && t<110.5) drawComparisonStage(ctScene,t);
+  if(t>=110.0 && t<120.2) drawThreeScenes(ctScene,t);
+  if(t>=120 && t<124.5) drawOutro(ctScene,t);
+}
+
+/* ================= DOM 覆盖层：章节、注释、双语字幕 ================= */
+const $ = id => document.getElementById(id);
+const elTop=$('toplabel'), elAnn=$('annotation'), elSub=$('subtitle'), elSubEn=$('subtitle-en');
+const elTitle=$('titlecard'), elEnd=$('endcard');
+const titleSeries=elTitle.querySelector('.series');
+const titleName=elTitle.querySelector('.name');
+const titleQ=elTitle.querySelector('.q');
+const titleQEn=elTitle.querySelector('.q-en');
+
+function sectionAt(t){
+  let sec=SECTIONS[0];
+  for(const s of SECTIONS) if(t>=s[0]) sec=s;
+  return sec;
+}
+
+function drawOverlay(t){
+  const tcIn = t>=TITLE_CARD[0] && t<TITLE_CARD[1];
+  const endIn = t>=124.5;
+  const sec=sectionAt(t);
+
+  elTop.textContent = sec[1] || CFG.topic;
+  elTop.style.opacity = tcIn||endIn?0:.78;
+  elAnn.textContent = sec[2] || '';
+  elAnn.style.opacity = tcIn||endIn?0:.78;
+
+  const sub=SUBTITLES.find(([a,b])=>t>=a&&t<b);
+  if(sub && !tcIn && !endIn){
+    const [a,b,zh,en]=sub;
+    const kin=easeOut(clamp((t-a)/.38,0,1));
+    const kout=1-easeInOut(clamp((t-(b-.34))/.34,0,1));
+    const k=kin*kout;
+    elSub.innerHTML=zh;
+    elSubEn.textContent=en||'';
+    elSub.style.opacity=k;
+    elSubEn.style.opacity=k*.92;
+    elSub.style.transform=`translateY(${lerp(8,0,kin)}px)`;
+    elSubEn.style.transform=`translateY(${lerp(6,0,kin)}px)`;
+  } else {
+    elSub.innerHTML=''; elSubEn.textContent='';
+  }
+
+  if(tcIn){
+    elTitle.style.display='flex';
+    const aIn=easeOut(clamp((t-TITLE_CARD[0])/.7,0,1));
+    const aOut=1-clamp((t-(TITLE_CARD[1]-.55))/.55,0,1);
+    elTitle.style.opacity=aIn*aOut;
+    titleSeries.style.opacity=clamp((t-13.2)/.6,0,1);
+    titleName.style.opacity=clamp((t-13.5)/.7,0,1);
+    titleName.style.transform=`scale(${lerp(.93,1,easeOut(clamp((t-13.5)/1.0,0,1)))})`;
+    titleQ.style.opacity=clamp((t-14.1)/.7,0,1);
+    titleQEn.style.opacity=clamp((t-14.6)/.7,0,1)*.85;
+  } else {
+    elTitle.style.display='none';
+  }
+
+  if(endIn){
+    elEnd.style.display='flex';
+    elEnd.style.opacity=easeOut(clamp((t-124.5)/.8,0,1));
+  } else {
+    elEnd.style.display='none';
+  }
+}
+
+/* ================= 帧入口 ================= */
+window.render = function(t){
+  t=clamp(t,0,CFG.duration-.001);
+  drawBG(t);
+  drawScene(t);
+  drawOverlay(t);
+};
+
+/* 浏览器实时预览用；渲染器设 __RENDER_MODE__=true 后必须停止 */
+let __t0=performance.now();
+(function loop(){
+  if(window.__RENDER_MODE__) return;
+  window.render((performance.now()-__t0)/1000);
+  requestAnimationFrame(loop);
+})();
+
+/* 便于验收：关键数值自检 */
+window.selftest = function(){
+  const checks=[
+    {name:'P(23)=50.7%', ok:Math.abs(prob(23)-0.5072972343239857)<1e-12, got:prob(23), want:0.5072972343239857},
+    {name:'P(22)=47.6%', ok:Math.abs(prob(22)-0.4756953076625503)<1e-12, got:prob(22), want:0.4756953076625503},
+    {name:'模拟命中 510', ok:SIM.count===510 && SIM_PREFIX[1000]===510, got:SIM_PREFIX[1000], want:510},
+    {name:'C(23,2)=253', ok:PAIRS.length===253, got:PAIRS.length, want:253},
+  ];
+  return checks;
+};
+</script>
+</body>
+</html>
